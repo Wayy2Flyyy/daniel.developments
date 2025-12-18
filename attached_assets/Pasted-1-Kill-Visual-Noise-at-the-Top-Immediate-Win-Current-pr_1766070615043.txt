@@ -1,0 +1,180 @@
+1. Kill Visual Noise at the Top (Immediate Win)
+Current problem
+
+“All Products” header + filters + pills + badges = clutter before value.
+
+The top bar feels like a control panel, not a curated catalog.
+
+Exact changes
+
+Reduce the header height by 30–40%
+
+Remove background fill from the header bar
+
+Keep only:
+
+All Products (left)
+
+Filter button (right)
+
+Move category pills below the header, not inside it.
+
+2. Rebuild Card Layout (This Fixes 70% of the Weirdness)
+Current card issues
+
+Too many layers
+
+Badge overload
+
+Feature text density too high
+
+Price competes with everything else
+
+Replace EVERY card with this structure (exact order):
+
+Icon (top-left, muted)
+
+Product name (strong weight)
+
+Single outcome sentence (max 12 words)
+
+Price (quiet, bottom-left)
+
+Primary action (bottom-right)
+
+Nothing else.
+No bullet lists.
+No stacked badges.
+
+3. Remove Most Badges (Be Ruthless)
+Exact rule
+
+Only one badge type allowed across the entire grid
+
+Keep:
+Production-Ready
+
+Remove entirely:
+
+Free
+
+Verified
+
+Optimized
+
+Featured (use layout instead)
+
+Free products show $0 — that’s enough.
+
+4. Change Grid Density (Critical)
+Exact values
+
+Desktop: 3 cards per row
+
+Tablet: 2 cards
+
+Mobile: 1 card
+
+Increase:
+
+Vertical card padding by 20%
+
+Gap between rows by 30%
+
+This single change will instantly make it feel premium.
+
+5. Introduce Visual Hierarchy Using Size (Not Color)
+Featured products (Top 3)
+
+Use wider cards
+
+Span 2 columns
+
+Slightly larger title font
+
+More internal padding
+
+These should be:
+
+Anti-Cheat Core
+
+Economy Core
+
+Admin Panel / Core system
+
+Everything else stays standard size.
+
+This tells the user what matters without saying it.
+
+6. Fix Typography (Very Important)
+Current issue
+
+Text blends together.
+
+Exact typography rules
+
+Product name: Semibold / Bold
+
+Outcome sentence: Regular, lower contrast
+
+Price: Medium weight, smallest size
+
+Buttons: Consistent size everywhere
+
+Increase line height on descriptions slightly (1.4–1.5).
+
+7. Button Behavior (Subtle but Powerful)
+Replace
+
+Add +
+
+With
+
+View →
+
+This changes the mental model from shopping cart to evaluation, which is what users are actually doing.
+
+Add to cart belongs on the product page, not the grid.
+
+8. Categorization Without Clutter
+
+Instead of pills everywhere:
+
+Add section headers:
+
+Core Systems
+
+Utilities
+
+Assets
+
+Each section:
+
+3–6 products max
+
+White space above and below
+
+Scrolling should feel like chapters, not a wall.
+
+9. Color Discipline
+Current issue
+
+Too many accent colors compete.
+
+Exact fix
+
+One accent color for actions
+
+One neutral for icons
+
+No per-card color themes
+
+Color should signal interaction, not classification.
+
+10. Final Psychological Touch (Do This)
+
+Add a single line above the grid:
+
+“Every product below is tested in live environments.”
+
+This reassures users before they even scan.

@@ -2,133 +2,65 @@ import { Navbar } from "@/components/navbar";
 import { ProductCard } from "@/components/product-card";
 import { portfolioProjects } from "@/lib/products";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Github, Twitter, Disc, Filter, Loader2, Shield, CheckCircle2, Zap, Users, Code2, Server, Sparkles, Layout, SlidersHorizontal, ArrowUpDown, ChevronDown } from "lucide-react";
+import { ArrowRight, Github, Twitter, Disc, Loader2, Shield, CheckCircle2, Zap, Users, Code2, Server, Sparkles, Layout, SlidersHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { fetchProducts } from "@/lib/api";
 import type { Product } from "@shared/schema";
 import { HeroSlideshow } from "@/components/hero-slideshow";
-import { motion, AnimatePresence } from "framer-motion";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { motion } from "framer-motion";
 
-type ProductCategory = 'All' | 'Game Scripts' | 'Applications' | 'Web Templates' | 'Developer Tools' | 'Misc';
-type PriceSort = 'default' | 'low-high' | 'high-low' | 'free-first';
-
-// Category styling with full theme
-const categoryConfig: Record<ProductCategory, { 
-  accent: string; 
-  icon: typeof Server; 
-  gradient: string;
-  bg: string;
-  border: string;
-  glow: string;
-  badge: string;
-}> = {
-  'All': { 
-    accent: 'text-white', 
-    icon: Sparkles, 
-    gradient: 'from-white/10 via-primary/10 to-transparent',
-    bg: 'bg-white/5',
-    border: 'border-white/20',
-    glow: 'shadow-white/10',
-    badge: 'bg-white/10 text-white border-white/20'
+const sectionConfig: Record<string, { title: string; categories: string[] }> = {
+  'core': { 
+    title: 'Core Systems',
+    categories: ['Game Scripts']
   },
-  'Game Scripts': { 
-    accent: 'text-cyan-400', 
-    icon: Server, 
-    gradient: 'from-cyan-500/20 via-blue-500/10 to-transparent',
-    bg: 'bg-cyan-500/10',
-    border: 'border-cyan-500/30',
-    glow: 'shadow-cyan-500/20',
-    badge: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
+  'utilities': { 
+    title: 'Utilities & Tools',
+    categories: ['Developer Tools', 'Applications']
   },
-  'Applications': { 
-    accent: 'text-orange-400', 
-    icon: Shield, 
-    gradient: 'from-orange-500/20 via-red-500/10 to-transparent',
-    bg: 'bg-orange-500/10',
-    border: 'border-orange-500/30',
-    glow: 'shadow-orange-500/20',
-    badge: 'bg-orange-500/10 text-orange-400 border-orange-500/30'
-  },
-  'Web Templates': { 
-    accent: 'text-violet-400', 
-    icon: Layout, 
-    gradient: 'from-violet-500/20 via-purple-500/10 to-transparent',
-    bg: 'bg-violet-500/10',
-    border: 'border-violet-500/30',
-    glow: 'shadow-violet-500/20',
-    badge: 'bg-violet-500/10 text-violet-400 border-violet-500/30'
-  },
-  'Developer Tools': { 
-    accent: 'text-amber-400', 
-    icon: Code2, 
-    gradient: 'from-amber-500/20 via-yellow-500/10 to-transparent',
-    bg: 'bg-amber-500/10',
-    border: 'border-amber-500/30',
-    glow: 'shadow-amber-500/20',
-    badge: 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-  },
-  'Misc': { 
-    accent: 'text-emerald-400', 
-    icon: Sparkles, 
-    gradient: 'from-emerald-500/20 via-green-500/10 to-transparent',
-    bg: 'bg-emerald-500/10',
-    border: 'border-emerald-500/30',
-    glow: 'shadow-emerald-500/20',
-    badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+  'assets': { 
+    title: 'Templates & Assets',
+    categories: ['Web Templates', 'Misc']
   },
 };
 
-const priceSortOptions: { value: PriceSort; label: string }[] = [
-  { value: 'default', label: 'Default' },
-  { value: 'low-high', label: 'Price: Low to High' },
-  { value: 'high-low', label: 'Price: High to Low' },
-  { value: 'free-first', label: 'Free First' },
+const featuredProductNames = [
+  "Anti-Cheat Core (Lua)",
+  "Mortal Economy Core",
+  "Mortal Admin Panel"
 ];
 
 export default function Home() {
-  const [activeCategory, setActiveCategory] = useState<ProductCategory>('All');
-  const [priceSort, setPriceSort] = useState<PriceSort>('default');
-
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products'],
     queryFn: fetchProducts,
   });
 
-  const categories: ProductCategory[] = [
-    'All',
-    'Web Templates',
-    'Developer Tools',
-    'Game Scripts',
-    'Applications',
-    'Misc'
-  ];
-
-  const filteredAndSortedProducts = useMemo(() => {
-    let result = activeCategory === 'All' 
-      ? [...products] 
-      : products.filter((p: Product) => p.category === activeCategory);
+  const productsBySection = useMemo(() => {
+    const sections: Record<string, Product[]> = {
+      core: [],
+      utilities: [],
+      assets: []
+    };
     
-    switch (priceSort) {
-      case 'low-high':
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case 'high-low':
-        result.sort((a, b) => b.price - a.price);
-        break;
-      case 'free-first':
-        result.sort((a, b) => (a.price === 0 ? -1 : b.price === 0 ? 1 : 0));
-        break;
-    }
+    products.forEach((product: Product) => {
+      for (const [key, config] of Object.entries(sectionConfig)) {
+        if (config.categories.includes(product.category)) {
+          sections[key].push(product);
+          break;
+        }
+      }
+    });
     
-    return result;
-  }, [products, activeCategory, priceSort]);
+    return sections;
+  }, [products]);
 
-  const currentConfig = categoryConfig[activeCategory];
-  const CurrentIcon = currentConfig.icon;
+  const featuredProducts = useMemo(() => {
+    return products.filter((p: Product) => featuredProductNames.includes(p.name));
+  }, [products]);
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -213,181 +145,132 @@ export default function Home() {
 
       {/* Products Section */}
       <section id="products" className="py-24 relative overflow-hidden">
-        {/* Dynamic background */}
-        <motion.div 
-          className={cn("absolute inset-0 transition-all duration-700 bg-gradient-to-b to-transparent", currentConfig.gradient)}
-          key={activeCategory}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.4 }}
-          transition={{ duration: 0.5 }}
-        />
-        <div className="absolute inset-0 bg-secondary/40" />
+        <div className="absolute inset-0 bg-secondary/30" />
         
-        {/* Grid pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div 
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-                                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)`,
-              backgroundSize: '60px 60px'
-            }}
-          />
-        </div>
-
         <div className="container mx-auto px-6 relative z-10">
-          {/* Section Header - Color coded */}
-          <motion.div 
-            className={cn(
-              "mb-12 p-8 rounded-3xl border backdrop-blur-xl transition-all duration-500",
-              currentConfig.bg,
-              currentConfig.border,
-              `shadow-2xl ${currentConfig.glow}`
-            )}
-            key={activeCategory + '-header'}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <div className={cn(
-                  "h-16 w-16 rounded-2xl flex items-center justify-center border",
-                  currentConfig.bg,
-                  currentConfig.border
-                )}>
-                  <CurrentIcon className={cn("h-8 w-8", currentConfig.accent)} />
-                </div>
-                <div>
-                  <h2 className="font-display text-3xl md:text-4xl font-bold text-white">
-                    {activeCategory === 'All' ? 'All Products' : activeCategory}
-                  </h2>
-                  <p className="text-muted-foreground">
-                    {activeCategory === 'All' 
-                      ? 'Browse all available products' 
-                      : `${filteredAndSortedProducts.length} products available`}
-                  </p>
-                </div>
-              </div>
-              
-              {/* Price Sort Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    className={cn(
-                      "rounded-xl border backdrop-blur-xl gap-2 h-12 px-5",
-                      currentConfig.border,
-                      "bg-white/5 hover:bg-white/10"
-                    )}
-                  >
-                    <ArrowUpDown className={cn("h-4 w-4", currentConfig.accent)} />
-                    <span className="hidden sm:inline">Sort by:</span>
-                    <span className={cn("font-medium", currentConfig.accent)}>
-                      {priceSortOptions.find(o => o.value === priceSort)?.label}
-                    </span>
-                    <ChevronDown className="h-4 w-4 opacity-50" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent 
-                  align="end" 
-                  className="w-48 bg-background/95 backdrop-blur-xl border-white/10"
-                >
-                  {priceSortOptions.map((option) => (
-                    <DropdownMenuItem
-                      key={option.value}
-                      onClick={() => setPriceSort(option.value)}
-                      className={cn(
-                        "cursor-pointer",
-                        priceSort === option.value && currentConfig.accent
-                      )}
-                    >
-                      {option.label}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+          {/* Simple Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="font-display text-2xl md:text-3xl font-bold text-white">
+              All Products
+            </h2>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="text-muted-foreground hover:text-white"
+            >
+              <SlidersHorizontal className="h-4 w-4 mr-2" />
+              Filter
+            </Button>
+          </div>
+          
+          {/* Reassurance Line */}
+          <p className="text-muted-foreground text-sm mb-12 border-b border-white/5 pb-6">
+            Every product below is tested in live environments.
+          </p>
+
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <p className="text-muted-foreground">Loading products...</p>
             </div>
-          </motion.div>
-
-          {/* Categories - Enhanced pills */}
-          <div className="flex flex-wrap gap-3 mb-12">
-            {categories.map((cat) => {
-              const config = categoryConfig[cat];
-              const Icon = config.icon;
-              const isActive = activeCategory === cat;
-              return (
-                <Button
-                  key={cat}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setActiveCategory(cat)}
-                  className={cn(
-                    "rounded-full px-6 py-3 h-auto transition-all duration-300 gap-2",
-                    isActive 
-                      ? cn("backdrop-blur-xl border shadow-lg", config.bg, config.border, config.glow, config.accent)
-                      : "text-muted-foreground hover:text-white hover:bg-white/5 border border-transparent"
-                  )}
-                >
-                  <Icon className={cn("h-4 w-4", isActive ? config.accent : "")} />
-                  {cat}
-                  {isActive && (
-                    <Badge variant="secondary" className={cn("ml-1 h-5 px-2 text-xs", config.badge)}>
-                      {filteredAndSortedProducts.length}
-                    </Badge>
-                  )}
-                </Button>
-              );
-            })}
-          </div>
-
-          {/* Products Grid */}
-          <div className="min-h-[400px]">
-            {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <div className="relative">
-                  <Loader2 className={cn("h-12 w-12 animate-spin", currentConfig.accent)} />
-                  <div className={cn("absolute inset-0 blur-xl animate-pulse", currentConfig.bg)} />
+          ) : (
+            <div className="space-y-20">
+              {/* Featured Products - Larger Cards */}
+              {featuredProducts.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-white/60 uppercase tracking-wider mb-8">
+                    Core Systems
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {featuredProducts.map((product: Product, index: number) => (
+                      <motion.div
+                        key={product.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: index * 0.1 }}
+                        className={index === 0 ? "lg:col-span-2" : ""}
+                      >
+                        <ProductCard product={product} featured />
+                      </motion.div>
+                    ))}
+                  </div>
                 </div>
-                <p className="text-muted-foreground">Loading products...</p>
-              </div>
-            ) : (
-              <AnimatePresence mode="wait">
-                <motion.div 
-                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-                  key={activeCategory + priceSort}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {filteredAndSortedProducts.map((product: Product, index: number) => (
-                    <motion.div
-                      key={product.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                    >
-                      <ProductCard product={product} />
-                    </motion.div>
-                  ))}
-                </motion.div>
-                
-                {filteredAndSortedProducts.length === 0 && (
-                  <motion.div 
-                    className="flex flex-col items-center justify-center py-20"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    <div className={cn("h-24 w-24 rounded-3xl flex items-center justify-center mb-6", currentConfig.bg, currentConfig.border, "border")}>
-                      <Filter className={cn("h-12 w-12 opacity-50", currentConfig.accent)} />
-                    </div>
-                    <p className="text-lg text-muted-foreground">No products in this category.</p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            )}
-          </div>
+              )}
+
+              {/* Utilities Section */}
+              {productsBySection.utilities.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-white/60 uppercase tracking-wider mb-8">
+                    Utilities & Tools
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {productsBySection.utilities
+                      .filter((p: Product) => !featuredProductNames.includes(p.name))
+                      .slice(0, 6)
+                      .map((product: Product, index: number) => (
+                        <motion.div
+                          key={product.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: index * 0.05 }}
+                        >
+                          <ProductCard product={product} />
+                        </motion.div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Assets Section */}
+              {productsBySection.assets.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-white/60 uppercase tracking-wider mb-8">
+                    Templates & Assets
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {productsBySection.assets.slice(0, 6).map((product: Product, index: number) => (
+                      <motion.div
+                        key={product.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: index * 0.05 }}
+                      >
+                        <ProductCard product={product} />
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Game Scripts Section */}
+              {productsBySection.core.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-white/60 uppercase tracking-wider mb-8">
+                    Game Scripts
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {productsBySection.core
+                      .filter((p: Product) => !featuredProductNames.includes(p.name))
+                      .slice(0, 6)
+                      .map((product: Product, index: number) => (
+                        <motion.div
+                          key={product.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: index * 0.05 }}
+                        >
+                          <ProductCard product={product} />
+                        </motion.div>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
