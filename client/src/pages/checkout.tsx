@@ -4,29 +4,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, Lock, ArrowRight } from "lucide-react";
+import { Lock, ArrowLeft, CreditCard } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { motion } from "framer-motion";
 
 const checkoutSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  firstName: z.string().min(2, "First name is required"),
-  lastName: z.string().min(2, "Last name is required"),
-  address: z.string().min(5, "Address is required"),
-  city: z.string().min(2, "City is required"),
-  zip: z.string().min(4, "ZIP code is required"),
-  cardNumber: z.string().min(16, "Invalid card number").max(19),
-  expiry: z.string().regex(/^(0[1-9]|1[0-2])\/\d{2}$/, "Format: MM/YY"),
+  email: z.string().email("Invalid email"),
+  cardNumber: z.string().min(19, "Card number is too short"), // 16 digits + 3 spaces
+  expiry: z.string().regex(/^(0[1-9]|1[0-2])\/\d{2}$/, "Invalid date (MM/YY)"),
   cvc: z.string().min(3, "Invalid CVC").max(4),
+  name: z.string().min(2, "Name required"),
 });
 
 export default function CheckoutPage() {
-  const { items, cartTotal, removeFromCart, updateQuantity, clearCart } = useCart();
+  const { items, cartTotal, clearCart } = useCart();
   const { toast } = useToast();
   const [_, setLocation] = useLocation();
 
@@ -34,38 +30,53 @@ export default function CheckoutPage() {
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
       email: "",
-      firstName: "",
-      lastName: "",
-      address: "",
-      city: "",
-      zip: "",
       cardNumber: "",
       expiry: "",
       cvc: "",
+      name: "",
     },
   });
 
   const onSubmit = (data: z.infer<typeof checkoutSchema>) => {
-    // Mock payment processing
     setTimeout(() => {
       toast({
-        title: "Order Confirmed!",
-        description: "Thank you for your purchase. A confirmation email has been sent.",
+        title: "Transaction Successful",
+        description: "Your digital assets are being prepared for download.",
       });
       clearCart();
       setLocation("/");
     }, 1500);
   };
 
+  // Formatters
+  const formatCardNumber = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value.replace(/\D/g, '');
+    val = val.substring(0, 16);
+    val = val.replace(/(\d{4})(?=\d)/g, '$1 ');
+    form.setValue('cardNumber', val);
+  };
+
+  const formatExpiry = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value.replace(/\D/g, '');
+    if (val.length >= 2) {
+      val = val.substring(0, 2) + '/' + val.substring(2, 4);
+    }
+    form.setValue('expiry', val);
+  };
+
+  const formatCVC = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value.replace(/\D/g, '');
+    val = val.substring(0, 4);
+    form.setValue('cvc', val);
+  };
+
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="container mx-auto px-4 py-24 text-center">
-          <h1 className="font-serif text-4xl mb-6">Your cart is empty</h1>
-          <p className="text-muted-foreground mb-8">Looks like you haven't added anything yet.</p>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <h1 className="font-display text-2xl">Cart Empty</h1>
           <Link href="/">
-            <Button size="lg">Continue Shopping</Button>
+            <Button variant="link" className="text-primary">Return Home</Button>
           </Link>
         </div>
       </div>
@@ -73,227 +84,150 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      
-      <div className="container mx-auto px-4 py-12">
-        <h1 className="font-serif text-3xl md:text-4xl font-bold mb-8">Checkout</h1>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          {/* Checkout Form */}
-          <div className="lg:col-span-7 space-y-8">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <div className="border-b border-white/5 bg-background/50 backdrop-blur-md sticky top-0 z-50">
+        <div className="container mx-auto px-6 h-16 flex items-center">
+           <Link href="/">
+             <div className="flex items-center gap-2 text-muted-foreground hover:text-white transition-colors cursor-pointer">
+               <ArrowLeft className="h-4 w-4" />
+               <span className="text-sm font-medium">Cancel Payment</span>
+             </div>
+           </Link>
+           <div className="ml-auto flex items-center gap-2 text-sm font-mono text-muted-foreground">
+             <Lock className="h-3 w-3" />
+             SECURE_CHECKOUT_V3
+           </div>
+        </div>
+      </div>
+
+      <div className="flex-1 container mx-auto px-6 py-12 flex items-center justify-center">
+        <div className="w-full max-w-lg">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-8"
+          >
+            <div className="text-center mb-10">
+              <p className="text-muted-foreground text-sm uppercase tracking-widest mb-2">Total Due</p>
+              <h1 className="font-mono text-5xl font-bold text-white">${cartTotal.toFixed(2)}</h1>
+            </div>
+
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 
-                {/* Contact Info */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="font-serif text-xl">Contact Information</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input placeholder="you@example.com" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </CardContent>
-                </Card>
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input 
+                            placeholder="Email Address" 
+                            {...field} 
+                            className="h-12 bg-white/5 border-white/10 focus:border-primary/50 text-lg"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                {/* Shipping Info */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="font-serif text-xl">Shipping Address</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-blue-500/20 rounded-lg blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
+                    <div className="relative bg-black/40 border border-white/10 rounded-lg p-6 space-y-4 backdrop-blur-md">
                       <FormField
                         control={form.control}
-                        name="firstName"
+                        name="cardNumber"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>First Name</FormLabel>
                             <FormControl>
-                              <Input placeholder="John" {...field} />
+                              <div className="relative">
+                                <CreditCard className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
+                                <Input 
+                                  placeholder="0000 0000 0000 0000" 
+                                  {...field} 
+                                  onChange={formatCardNumber}
+                                  className="pl-10 h-12 bg-white/5 border-white/10 font-mono text-lg tracking-wider"
+                                  maxLength={19}
+                                />
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      <FormField
-                        control={form.control}
-                        name="lastName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Last Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Doe" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <FormField
-                      control={form.control}
-                      name="address"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Address</FormLabel>
-                          <FormControl>
-                            <Input placeholder="123 Main St" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="city"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>City</FormLabel>
-                            <FormControl>
-                              <Input placeholder="New York" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="zip"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>ZIP Code</FormLabel>
-                            <FormControl>
-                              <Input placeholder="10001" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
 
-                {/* Payment Info */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="font-serif text-xl flex items-center gap-2">
-                      Payment <Lock className="h-4 w-4 text-muted-foreground" />
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="cardNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Card Number</FormLabel>
-                          <FormControl>
-                            <Input placeholder="0000 0000 0000 0000" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="expiry"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Expiry</FormLabel>
-                            <FormControl>
-                              <Input placeholder="MM/YY" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="cvc"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>CVC</FormLabel>
-                            <FormControl>
-                              <Input placeholder="123" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Button type="submit" size="lg" className="w-full h-14 text-lg">
-                  Pay ${cartTotal.toFixed(2)}
-                </Button>
-              </form>
-            </Form>
-          </div>
-
-          {/* Order Summary */}
-          <div className="lg:col-span-5">
-            <Card className="bg-secondary/20 border-none sticky top-24">
-              <CardHeader>
-                <CardTitle className="font-serif text-xl">Order Summary</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {items.map((item) => (
-                    <div key={item.id} className="flex gap-4">
-                      <div className="h-16 w-16 rounded border bg-white overflow-hidden flex-shrink-0">
-                        <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="expiry"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input 
+                                  placeholder="MM/YY" 
+                                  {...field} 
+                                  onChange={formatExpiry}
+                                  className="h-12 bg-white/5 border-white/10 font-mono text-center text-lg"
+                                  maxLength={5}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="cvc"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input 
+                                  placeholder="CVC" 
+                                  {...field} 
+                                  type="password"
+                                  onChange={formatCVC}
+                                  className="h-12 bg-white/5 border-white/10 font-mono text-center text-lg"
+                                  maxLength={4}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <h4 className="font-medium text-sm">{item.name}</h4>
-                          <span className="font-medium text-sm">${(item.price * item.quantity).toFixed(2)}</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">Qty: {item.quantity}</p>
-                      </div>
+                      
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input 
+                                placeholder="Cardholder Name" 
+                                {...field} 
+                                className="h-12 bg-white/5 border-white/10"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
-                  ))}
-                  
-                  <Separator />
-                  
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Subtotal</span>
-                      <span>${cartTotal.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Shipping</span>
-                      <span>Free</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Taxes</span>
-                      <span>Calculated at next step</span>
-                    </div>
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div className="flex justify-between font-medium text-lg">
-                    <span>Total</span>
-                    <span>${cartTotal.toFixed(2)}</span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+
+                <Button type="submit" size="lg" className="w-full h-14 text-lg font-bold bg-white text-black hover:bg-white/90 shadow-lg shadow-white/5 mt-8">
+                  Pay Now
+                </Button>
+
+                <p className="text-center text-xs text-muted-foreground mt-4">
+                  Encrypted via Stripe. No payment data is stored on our servers.
+                </p>
+              </form>
+            </Form>
+          </motion.div>
         </div>
       </div>
     </div>
