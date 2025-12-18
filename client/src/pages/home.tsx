@@ -1,12 +1,29 @@
 import { Navbar } from "@/components/navbar";
 import { ProductCard } from "@/components/product-card";
-import { products, portfolioProjects, heroImage } from "@/lib/products";
+import { products, portfolioProjects, heroImage, ProductCategory } from "@/lib/products";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
-import { ArrowRight, ChevronDown, Github, Twitter, Disc, Server } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, ChevronDown, Github, Twitter, Disc, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 export default function Home() {
+  const [activeCategory, setActiveCategory] = useState<ProductCategory | 'All'>('All');
+
+  const categories: (ProductCategory | 'All')[] = [
+    'All',
+    'FiveM Resources',
+    'Applications',
+    'Web Templates',
+    'Developer Tools',
+    'Misc'
+  ];
+
+  const filteredProducts = activeCategory === 'All' 
+    ? products 
+    : products.filter(p => p.category === activeCategory);
+
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary/30">
       <Navbar />
@@ -123,10 +140,43 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+          {/* Categories / Filter */}
+          <div className="flex flex-wrap justify-center gap-2 mb-12">
+            {categories.map((cat) => (
+              <Button
+                key={cat}
+                variant={activeCategory === cat ? "default" : "outline"}
+                onClick={() => setActiveCategory(cat)}
+                className={cn(
+                  "rounded-full border-white/10",
+                  activeCategory === cat 
+                    ? "bg-white text-black hover:bg-white/90" 
+                    : "bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-white"
+                )}
+              >
+                {cat}
+              </Button>
             ))}
+          </div>
+
+          <div className="min-h-[400px]">
+             <AnimatePresence mode="popLayout">
+               <motion.div 
+                 layout
+                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+               >
+                 {filteredProducts.map((product) => (
+                   <ProductCard key={product.id} product={product} />
+                 ))}
+               </motion.div>
+             </AnimatePresence>
+             
+             {filteredProducts.length === 0 && (
+               <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                 <Filter className="h-12 w-12 mb-4 opacity-20" />
+                 <p>No products found in this category.</p>
+               </div>
+             )}
           </div>
         </div>
       </section>
