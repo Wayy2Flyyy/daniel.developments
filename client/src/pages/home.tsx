@@ -1,8 +1,8 @@
 import { Navbar } from "@/components/navbar";
 import { ProductCard } from "@/components/product-card";
-import { portfolioProjects, type Product as LocalProduct } from "@/lib/products";
+import { portfolioProjects } from "@/lib/products";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Github, Twitter, Disc, Filter, Loader2, Shield, CheckCircle2, Quote, ExternalLink } from "lucide-react";
+import { ArrowRight, Github, Twitter, Disc, Filter, Loader2, Shield, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -34,9 +34,6 @@ export default function Home() {
     ? products 
     : products.filter((p: Product) => p.category === activeCategory);
 
-  // Featured project for early proof
-  const featuredProject = portfolioProjects[0];
-
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <Navbar />
@@ -67,55 +64,6 @@ export default function Home() {
               Explore Live-Ready Tools <ArrowRight className="ml-2 h-5 w-5" />
             </a>
           </Button>
-        </div>
-      </section>
-
-      {/* Featured Proof - BEFORE products (proof-before-purchase loop) */}
-      <section className="py-16 border-b border-white/5 bg-black/20">
-        <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div className="relative aspect-video rounded-xl overflow-hidden border border-white/10">
-              <img 
-                src={featuredProject.image} 
-                alt={featuredProject.name}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            </div>
-            <div className="space-y-4">
-              <Badge variant="outline" className="border-primary/30 text-primary">Featured Case</Badge>
-              <h3 className="font-display text-2xl md:text-3xl font-bold text-white">{featuredProject.name}</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Complete ecosystem overhaul. From scattered scripts to unified architecture. 
-                Result: 80% reduction in admin overhead, zero exploits in 6 months.
-              </p>
-              <Button variant="outline" className="border-white/10 hover:bg-white/5">
-                View Case Study <ExternalLink className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Social Proof Quote */}
-      <section className="py-16 border-b border-white/5">
-        <div className="container mx-auto px-6">
-          <div className="max-w-3xl mx-auto text-center">
-            <Quote className="h-10 w-10 text-primary/30 mx-auto mb-6" />
-            <blockquote className="text-xl md:text-2xl font-medium text-white leading-relaxed mb-6">
-              "Switched from three different script packs to Mortal's ecosystem. Setup went from 8 hours to 45 minutes. 
-              No exploits in 6 months of running 100+ players."
-            </blockquote>
-            <div className="flex items-center justify-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                M
-              </div>
-              <div className="text-left">
-                <p className="font-medium text-white">Marcus R.</p>
-                <p className="text-sm text-muted-foreground">100Racks Server Owner</p>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
