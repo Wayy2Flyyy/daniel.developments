@@ -2,20 +2,20 @@ import { Navbar } from "@/components/navbar";
 import { useCart } from "@/lib/cart-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Lock, ArrowLeft, CreditCard } from "lucide-react";
+import { Lock, ArrowLeft, CreditCard, Loader2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
+import { createOrder } from "@/lib/api";
+import { useMutation } from "@tanstack/react-query";
 
 const checkoutSchema = z.object({
   email: z.string().email("Invalid email"),
-  cardNumber: z.string().min(19, "Card number is too short"), // 16 digits + 3 spaces
+  cardNumber: z.string().min(19, "Card number is too short"),
   expiry: z.string().regex(/^(0[1-9]|1[0-2])\/\d{2}$/, "Invalid date (MM/YY)"),
   cvc: z.string().min(3, "Invalid CVC").max(4),
   name: z.string().min(2, "Name required"),
@@ -37,18 +37,38 @@ export default function CheckoutPage() {
     },
   });
 
-  const onSubmit = (data: z.infer<typeof checkoutSchema>) => {
-    setTimeout(() => {
+  const orderMutation = useMutation({
+    mutationFn: createOrder,
+    onSuccess: () => {
       toast({
         title: "Transaction Successful",
         description: "Your digital assets are being prepared for download.",
       });
       clearCart();
       setLocation("/");
-    }, 1500);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Payment Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const onSubmit = (data: z.infer<typeof checkoutSchema>) => {
+    orderMutation.mutate({
+      email: data.email,
+      items: items.map(item => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+      })),
+      total: Math.round(cartTotal * 100),
+    });
   };
 
-  // Formatters
   const formatCardNumber = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value.replace(/\D/g, '');
     val = val.substring(0, 16);
@@ -126,6 +146,7 @@ export default function CheckoutPage() {
                             placeholder="Email Address" 
                             {...field} 
                             className="h-12 bg-white/5 border-white/10 focus:border-primary/50 text-lg"
+                            disabled={orderMutation.isPending}
                           />
                         </FormControl>
                         <FormMessage />
@@ -150,6 +171,7 @@ export default function CheckoutPage() {
                                   onChange={formatCardNumber}
                                   className="pl-10 h-12 bg-white/5 border-white/10 font-mono text-lg tracking-wider"
                                   maxLength={19}
+                                  disabled={orderMutation.isPending}
                                 />
                               </div>
                             </FormControl>
@@ -171,6 +193,7 @@ export default function CheckoutPage() {
                                   onChange={formatExpiry}
                                   className="h-12 bg-white/5 border-white/10 font-mono text-center text-lg"
                                   maxLength={5}
+                                  disabled={orderMutation.isPending}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -190,6 +213,7 @@ export default function CheckoutPage() {
                                   onChange={formatCVC}
                                   className="h-12 bg-white/5 border-white/10 font-mono text-center text-lg"
                                   maxLength={4}
+                                  disabled={orderMutation.isPending}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -208,6 +232,7 @@ export default function CheckoutPage() {
                                 placeholder="Cardholder Name" 
                                 {...field} 
                                 className="h-12 bg-white/5 border-white/10"
+                                disabled={orderMutation.isPending}
                               />
                             </FormControl>
                             <FormMessage />
@@ -218,8 +243,20 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                <Button type="submit" size="lg" className="w-full h-14 text-lg font-bold bg-white text-black hover:bg-white/90 shadow-lg shadow-white/5 mt-8">
-                  Pay Now
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  className="w-full h-14 text-lg font-bold bg-white text-black hover:bg-white/90 shadow-lg shadow-white/5 mt-8"
+                  disabled={orderMutation.isPending}
+                >
+                  {orderMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    "Pay Now"
+                  )}
                 </Button>
 
                 <p className="text-center text-xs text-muted-foreground mt-4">

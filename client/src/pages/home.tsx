@@ -1,17 +1,27 @@
 import { Navbar } from "@/components/navbar";
 import { ProductCard } from "@/components/product-card";
-import { products, portfolioProjects, heroImage, ProductCategory } from "@/lib/products";
+import { heroImage, portfolioProjects } from "@/lib/products";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ChevronDown, Github, Twitter, Disc, Filter } from "lucide-react";
+import { ArrowRight, ChevronDown, Github, Twitter, Disc, Filter, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { fetchProducts } from "@/lib/api";
+import { Product } from "@shared/schema";
+
+type ProductCategory = 'All' | 'FiveM Resources' | 'Applications' | 'Web Templates' | 'Developer Tools' | 'Misc';
 
 export default function Home() {
-  const [activeCategory, setActiveCategory] = useState<ProductCategory | 'All'>('All');
+  const [activeCategory, setActiveCategory] = useState<ProductCategory>('All');
 
-  const categories: (ProductCategory | 'All')[] = [
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ['products'],
+    queryFn: fetchProducts,
+  });
+
+  const categories: ProductCategory[] = [
     'All',
     'FiveM Resources',
     'Applications',
@@ -22,7 +32,7 @@ export default function Home() {
 
   const filteredProducts = activeCategory === 'All' 
     ? products 
-    : products.filter(p => p.category === activeCategory);
+    : products.filter((p: Product) => p.category === activeCategory);
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary/30">
@@ -160,23 +170,31 @@ export default function Home() {
           </div>
 
           <div className="min-h-[400px]">
-             <AnimatePresence mode="popLayout">
-               <motion.div 
-                 layout
-                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-               >
-                 {filteredProducts.map((product) => (
-                   <ProductCard key={product.id} product={product} />
-                 ))}
-               </motion.div>
-             </AnimatePresence>
-             
-             {filteredProducts.length === 0 && (
-               <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-                 <Filter className="h-12 w-12 mb-4 opacity-20" />
-                 <p>No products found in this category.</p>
-               </div>
-             )}
+            {isLoading ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+              </div>
+            ) : (
+              <>
+                <AnimatePresence mode="popLayout">
+                  <motion.div 
+                    layout
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+                  >
+                    {filteredProducts.map((product: Product) => (
+                      <ProductCard key={product.id} product={product} />
+                    ))}
+                  </motion.div>
+                </AnimatePresence>
+                
+                {filteredProducts.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                    <Filter className="h-12 w-12 mb-4 opacity-20" />
+                    <p>No products found in this category.</p>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </section>
