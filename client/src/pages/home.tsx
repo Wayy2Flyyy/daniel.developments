@@ -144,12 +144,12 @@ export default function Home() {
       </section>
 
       {/* Products Section */}
-      <section id="products" className="py-24 relative overflow-hidden">
+      <section id="products" className="py-28 relative overflow-hidden">
         <div className="absolute inset-0 bg-secondary/30" />
         
-        <div className="container mx-auto px-6 relative z-10">
+        <div className="container mx-auto px-6 lg:px-8 relative z-10 max-w-7xl">
           {/* Simple Header */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="font-display text-2xl md:text-3xl font-bold text-white">
               All Products
             </h2>
@@ -163,10 +163,13 @@ export default function Home() {
             </Button>
           </div>
           
-          {/* Reassurance Line */}
-          <p className="text-muted-foreground text-sm mb-12 border-b border-white/5 pb-6">
-            Every product below is tested in live environments.
-          </p>
+          {/* Visual Anchor with Accent Underline */}
+          <div className="mb-16">
+            <p className="text-white/50 text-sm mb-3">
+              Every product below is actively used in live environments.
+            </p>
+            <div className="h-px w-32 bg-gradient-to-r from-cyan-500/60 to-transparent" />
+          </div>
 
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -174,13 +177,17 @@ export default function Home() {
               <p className="text-muted-foreground">Loading products...</p>
             </div>
           ) : (
-            <div className="space-y-20">
-              {/* Featured Products - Larger Cards */}
+            <div className="space-y-24">
+              {/* Featured Products - Core Systems */}
               {featuredProducts.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold text-white/60 uppercase tracking-wider mb-8">
-                    Core Systems
-                  </h3>
+                  <div className="mb-10">
+                    <h3 className="text-xl font-semibold text-white/80 uppercase tracking-wider mb-2">
+                      Core Systems
+                    </h3>
+                    <p className="text-white/40 text-sm mb-3">Mission-critical systems for live servers</p>
+                    <div className="h-px w-full bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {featuredProducts.map((product: Product, index: number) => (
                       <motion.div
@@ -201,10 +208,14 @@ export default function Home() {
               {/* Utilities Section */}
               {productsBySection.utilities.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold text-white/60 uppercase tracking-wider mb-8">
-                    Utilities & Tools
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="mb-10">
+                    <h3 className="text-xl font-semibold text-white/80 uppercase tracking-wider mb-2">
+                      Utilities & Tools
+                    </h3>
+                    <p className="text-white/40 text-sm mb-3">Lightweight tools that solve specific problems</p>
+                    <div className="h-px w-full bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {productsBySection.utilities
                       .filter((p: Product) => !featuredProductNames.includes(p.name))
                       .slice(0, 6)
@@ -226,10 +237,14 @@ export default function Home() {
               {/* Assets Section */}
               {productsBySection.assets.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold text-white/60 uppercase tracking-wider mb-8">
-                    Templates & Assets
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="mb-10">
+                    <h3 className="text-xl font-semibold text-white/80 uppercase tracking-wider mb-2">
+                      Templates & Assets
+                    </h3>
+                    <p className="text-white/40 text-sm mb-3">Ready-to-use designs and visual components</p>
+                    <div className="h-px w-full bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {productsBySection.assets.slice(0, 6).map((product: Product, index: number) => (
                       <motion.div
                         key={product.id}
@@ -248,10 +263,14 @@ export default function Home() {
               {/* Game Scripts Section */}
               {productsBySection.core.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold text-white/60 uppercase tracking-wider mb-8">
-                    Game Scripts
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="mb-10">
+                    <h3 className="text-xl font-semibold text-white/80 uppercase tracking-wider mb-2">
+                      Game Scripts
+                    </h3>
+                    <p className="text-white/40 text-sm mb-3">Optimized scripts for game servers</p>
+                    <div className="h-px w-full bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {productsBySection.core
                       .filter((p: Product) => !featuredProductNames.includes(p.name))
                       .slice(0, 6)

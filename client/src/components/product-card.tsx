@@ -51,6 +51,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product, featured = false }: ProductCardProps) {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const outcome = outcomeLines[product.name] || "Production-ready code";
   const isFeatured = featured || featuredProducts.includes(product.name);
 
@@ -105,22 +106,47 @@ export function ProductCard({ product, featured = false }: ProductCardProps) {
       <Card 
         className={cn(
           "relative overflow-hidden group transition-all duration-300 h-full flex flex-col cursor-pointer",
-          "bg-white/[0.03] backdrop-blur-sm border-white/10 hover:border-white/20 hover:bg-white/[0.05]",
-          isFeatured && "ring-1 ring-white/10"
+          isFeatured 
+            ? "border-2 border-white/20 min-h-[300px]" 
+            : "border border-white/[0.08] min-h-[240px]",
+          isHovered && !isFeatured && "border-cyan-500/30 shadow-lg shadow-cyan-500/10",
+          isHovered && isFeatured && "border-cyan-500/40 shadow-xl shadow-cyan-500/20"
         )}
         onClick={() => setIsDetailOpen(true)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         data-testid={`card-product-${product.id}`}
+        style={{
+          background: isFeatured
+            ? `radial-gradient(ellipse at top left, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.015) 100%)`
+            : `radial-gradient(ellipse at top left, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.01) 100%)`,
+          boxShadow: isHovered 
+            ? isFeatured 
+              ? 'inset 0 0 0 1px rgba(255,255,255,0.1), 0 12px 40px rgba(0,0,0,0.4), 0 0 20px rgba(6,182,212,0.15)' 
+              : 'inset 0 0 0 1px rgba(255,255,255,0.08), 0 8px 32px rgba(0,0,0,0.3)' 
+            : isFeatured
+              ? 'inset 0 0 0 1px rgba(255,255,255,0.06), 0 4px 20px rgba(0,0,0,0.2)'
+              : 'inset 0 0 0 1px rgba(255,255,255,0.04)'
+        }}
       >
         <CardContent className={cn(
           "flex flex-col relative z-10 h-full",
-          isFeatured ? "p-8" : "p-6"
+          isFeatured ? "p-8" : "p-7"
         )}>
-          <div className="flex items-start gap-3 mb-3">
-            <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 flex-shrink-0">
-              <Package className="h-5 w-5 text-muted-foreground" />
+          <div className="flex items-start gap-3 mb-4">
+            <div 
+              className={cn(
+                "h-11 w-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300",
+                "border border-white/10"
+              )}
+              style={{
+                background: 'radial-gradient(circle at center, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)'
+              }}
+            >
+              <Package className="h-5 w-5 text-white/50" />
             </div>
             {isFeatured && (
-              <Badge className="ml-auto bg-white/10 text-white/70 border-white/20 text-xs">
+              <Badge className="ml-auto bg-cyan-500/15 text-cyan-400 border-cyan-500/30 text-xs font-medium">
                 Production-Ready
               </Badge>
             )}
@@ -134,27 +160,36 @@ export function ProductCard({ product, featured = false }: ProductCardProps) {
           </h3>
           
           <p className={cn(
-            "text-muted-foreground mb-auto line-clamp-2",
+            "text-white/40 mb-auto line-clamp-2",
             isFeatured ? "text-base leading-relaxed" : "text-sm leading-relaxed"
           )}>
             {outcome}
           </p>
 
           <div className="flex items-end justify-between mt-6 pt-4 border-t border-white/5">
-            <span className="text-sm text-muted-foreground font-mono">
+            <span className="text-sm text-white/40 font-mono">
               {product.price === 0 ? '$0' : `$${product.price}`}
             </span>
             <Button 
               size="sm" 
               variant="ghost"
-              className="text-white/70 hover:text-white hover:bg-white/10 rounded-lg gap-1.5 h-8 px-3"
+              className="text-white/50 hover:text-white hover:bg-white/5 rounded-lg gap-1.5 h-8 px-3 group/btn"
               onClick={(e) => {
                 e.stopPropagation();
                 setIsDetailOpen(true);
               }}
               data-testid={`button-view-${product.id}`}
             >
-              View <ArrowRight className="h-3.5 w-3.5" />
+              View 
+              <motion.span
+                animate={{ x: isHovered ? 3 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ArrowRight className={cn(
+                  "h-3.5 w-3.5 transition-colors duration-200",
+                  isHovered ? "text-cyan-400" : "text-white/50"
+                )} />
+              </motion.span>
             </Button>
           </div>
         </CardContent>

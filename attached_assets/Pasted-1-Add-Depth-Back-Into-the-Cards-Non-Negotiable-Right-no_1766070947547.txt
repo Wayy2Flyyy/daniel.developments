@@ -1,0 +1,147 @@
+1. Add Depth Back Into the Cards (Non-Negotiable)
+
+Right now cards are flat blocks.
+
+Fix:
+
+Add a soft radial gradient inside each card
+Example:
+Dark base → slightly lighter top-left corner
+
+Add a very subtle inner glow (1px, low opacity)
+
+This creates depth without clutter.
+
+Result: Cards feel touchable, not static.
+
+2. Reintroduce Accent Color — But With Discipline
+
+You removed too much color.
+
+Do NOT re-add rainbow themes.
+DO use accent color intentionally.
+
+Exact rules:
+
+Product title: white
+
+Outcome sentence: muted gray
+
+Accent color used ONLY for:
+
+“Production-Ready” badge
+
+Arrow icon in “View →”
+
+Hover border glow
+
+That’s it.
+
+This keeps it calm but alive.
+
+3. Upgrade the Section Headers (Major Lift)
+
+“CORE SYSTEMS” and “UTILITIES & TOOLS” are too plain.
+
+Fix:
+
+Increase font size slightly
+
+Add a thin horizontal divider line beneath
+
+Add a subtle gradient fade on the divider
+
+Optional microcopy below header:
+
+Mission-critical systems for live servers
+Lightweight tools that solve specific problems
+
+Now sections feel intentional, not just grouped.
+
+4. Cards Need a Clear Hover Moment
+
+Right now hover feels minimal to the point of invisible.
+
+On hover, add:
+
+Border glow (accent color, very low opacity)
+
+Slight background lift (2–4%)
+
+Arrow icon animates right by 2–3px
+
+No scaling. No bouncing. Just confidence.
+
+Hover should say:
+
+“Yes, this is interactive.”
+
+5. Brighten the Grid With Spacing, Not Color
+
+You don’t need lighter colors — you need air.
+
+Exact changes:
+
+Increase vertical gap between rows by ~20%
+
+Increase internal padding inside cards
+
+Slightly widen the grid container
+
+This makes the section feel less compressed and more premium.
+
+6. Add a Subtle “Featured Weight” Without Rebuilding
+
+Your core systems should visually dominate.
+
+Do this:
+
+Make Core System cards:
+
+Slightly taller
+
+Slightly thicker border
+
+Slightly stronger glow on hover
+
+Not bigger text — bigger presence.
+
+The user should feel these are important before reading.
+
+7. Add a Visual Anchor Above the Grid
+
+Right now the section starts cold.
+
+Add one line under “All Products”:
+
+Every product below is actively used in live environments.
+
+Then add a thin accent underline beneath that line.
+
+This warms the section immediately.
+
+8. Improve Icon Treatment (Small Change, Big Effect)
+
+Icons are currently too quiet.
+
+Fix:
+
+Add a faint circular background behind icons
+
+Slight gradient or glass effect
+
+Keep opacity low
+
+This ties back to your glassy / premium theme elsewhere.
+
+What NOT to Do (Important)
+
+Do not add more text
+
+Do not add feature lists
+
+Do not add more colors
+
+Do not reintroduce “Add to cart”
+
+Do not increase contrast aggressively
