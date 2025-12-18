@@ -1,0 +1,111 @@
+1. The Hero Is Too Passive
+
+The hero looks good, but it does not pull hard enough.
+
+Problem:
+The headline is clear but emotionally flat. It explains value, but it doesn’t compel action in the first 5 seconds.
+
+Fix:
+Add urgency or authority directly under the headline. For example:
+
+“Used by serious developers shipping real products.”
+
+“Built for production. Trusted in live environments.”
+
+This reframes you from “script seller” to professional infrastructure provider.
+
+2. Weak Primary Call to Action
+
+“Browse Products” is safe — too safe.
+
+Problem:
+It doesn’t feel like the obvious next step. It feels optional.
+
+Fix:
+Replace with a more decisive action:
+
+“View Production Scripts”
+
+“Explore Live-Ready Tools”
+
+“Browse Verified Scripts”
+
+Words like verified, production, live-ready trigger trust and seriousness.
+
+3. No Instant Differentiation
+
+Right now, users understand what you sell, but not why you over others within 8 seconds.
+
+Problem:
+There is no fast comparison anchor.
+
+Fix (high impact):
+Add a single comparison line under the CTA:
+
+“Not templates. Not experiments. Production-tested code.”
+
+This immediately separates you from low-quality marketplaces.
+
+4. Product Cards Are Informational, Not Persuasive
+
+The cards are clean, but they read like a list — not a solution.
+
+Problem:
+Users skim titles and prices, but don’t instantly feel need.
+
+Fix:
+Add one bold outcome line per card:
+
+“Eliminates manual moderation”
+
+“Deploy in under 5 minutes”
+
+“Cuts admin setup time by 80%”
+
+Outcome > features. Always.
+
+5. Too Much Content Before Emotional Lock-In
+
+You show competence early, but emotional attachment comes late.
+
+Problem:
+“Selected Works” appears after product overload. Emotion should come earlier.
+
+Fix:
+Move one strong featured project or testimonial higher up:
+
+A single large case study
+
+Or one sharp quote from a real user
+
+This creates social proof before decision fatigue.
+
+6. The Brand Voice Is Slightly Generic
+
+The design is premium, but the language plays it safe.
+
+Problem:
+Safe language does not stick in memory.
+
+Fix:
+Lean into confidence. Example:
+
+Replace “Premium FiveM resources…” with
+“Serious tools for serious FiveM servers.”
+
+Confidence increases perceived value.
+
+One High-Level Strategic Suggestion (Important)
+
+Right now, your site feels like a high-quality store.
+It should feel like a standard setter.
+
+To do that:
+
+Introduce a “Quality Guarantee” concept
+
+Or a “Production-Ready Standard” badge
+
+Or a short manifesto: Why low-quality scripts break servers
+
+This positions you as an authority, not a vendor.

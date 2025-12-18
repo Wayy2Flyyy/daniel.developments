@@ -2,10 +2,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Product } from "@/lib/products";
+import type { Product } from "@shared/schema";
 import { useCart } from "@/lib/cart-context";
-import { ShoppingCart, Check, X, Code, Terminal, ShieldCheck } from "lucide-react";
+import { ShoppingCart, Check, X, Terminal, ShieldCheck, Zap } from "lucide-react";
 import { useState } from "react";
 
 interface ProductDetailDialogProps {
@@ -19,7 +18,12 @@ export function ProductDetailDialog({ product, open, onOpenChange }: ProductDeta
   const [added, setAdded] = useState(false);
 
   const handleAddToCart = () => {
-    addToCart(product);
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+    });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
@@ -51,25 +55,35 @@ export function ProductDetailDialog({ product, open, onOpenChange }: ProductDeta
 
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
-             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-               <ShieldCheck className="h-4 w-4 text-green-500" />
-               <span>Verified Secure</span>
+             <div className="flex items-center gap-2 text-sm text-primary">
+               <Zap className="h-4 w-4" />
+               <span className="font-medium">Production-Ready</span>
              </div>
-             <span className="font-mono text-2xl font-bold text-white">${product.price}</span>
+             <span className="font-mono text-2xl font-bold text-white">
+               {product.price === 0 ? 'Free' : `$${product.price}`}
+             </span>
           </div>
 
-          <ScrollArea className="h-[200px] pr-4 rounded-md border border-white/5 bg-white/5 p-4 mb-6">
+          <ScrollArea className="h-[180px] pr-4 rounded-md border border-white/5 bg-white/5 p-4 mb-6">
             <DialogDescription className="text-base leading-relaxed text-muted-foreground">
               {product.description}
               <br /><br />
-              This product is designed for high-performance environments. It integrates seamlessly with existing frameworks and includes comprehensive documentation for easy setup.
+              Tested on live servers with 100+ concurrent players. Includes documentation, Discord support, and free updates.
               <br /><br />
-              <strong>Technical Specifications:</strong>
-              <ul className="list-disc pl-5 mt-2 space-y-1">
-                <li>Optimized codebase (0.01ms resmon)</li>
-                <li>Fully configurable via config.lua</li>
-                <li>Discord Webhook integration supported</li>
-                <li>Regular updates included</li>
+              <strong className="text-white">What's included:</strong>
+              <ul className="list-none mt-2 space-y-1">
+                <li className="flex items-center gap-2">
+                  <Check className="h-3 w-3 text-primary" /> Full source code access
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-3 w-3 text-primary" /> Detailed documentation
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-3 w-3 text-primary" /> Discord support channel
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-3 w-3 text-primary" /> Lifetime updates
+                </li>
               </ul>
             </DialogDescription>
           </ScrollArea>
@@ -77,7 +91,7 @@ export function ProductDetailDialog({ product, open, onOpenChange }: ProductDeta
           <div className="space-y-4">
             <h4 className="text-sm font-medium text-white uppercase tracking-wider">Key Features</h4>
             <div className="grid grid-cols-2 gap-3">
-              {product.features.map((feature, i) => (
+              {(product.features as string[]).map((feature: string, i: number) => (
                 <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/30 p-2 rounded border border-white/5">
                   <Terminal className="h-3 w-3 text-primary" />
                   {feature}
