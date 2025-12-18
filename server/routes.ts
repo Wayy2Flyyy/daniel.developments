@@ -1,14 +1,205 @@
 import type { Express } from "express";
 import { type Server } from "http";
-import { storage } from "./storage";
-import { insertProductSchema, insertOrderSchema } from "@shared/schema";
+import cookieParser from "cookie-parser";
+import { storage } from "./storage.js";
+import { insertProductSchema, insertOrderSchema, registerSchema, loginSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
+import {
+  hashPassword,
+  verifyPassword,
+  getSessionExpiry,
+  setSessionCookie,
+  clearSessionCookie,
+  getClientIp,
+  getUserAgent,
+  authMiddleware,
+  requireAuth,
+  rateLimit,
+  sanitizeUser,
+  type AuthenticatedRequest,
+} from "./auth.js";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
   
+  app.use(cookieParser());
+  app.use(authMiddleware);
+
+  // ============ AUTH ROUTES ============
+
+  // Register
+  app.post("/api/auth/register", rateLimit(5, 15), async (req, res) => {
+    try {
+      const result = registerSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ error: fromZodError(result.error).message });
+      }
+
+      const { email, password, displayName } = result.data;
+
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(409).json({ error: "An account with this email already exists" });
+      }
+
+      const passwordHash = await hashPassword(password);
+      const user = await storage.createUser({
+        email,
+        passwordHash,
+        displayName: displayName || email.split("@")[0],
+      });
+
+      const session = await storage.createSession(
+        user.id,
+        getSessionExpiry(false),
+        getClientIp(req),
+        getUserAgent(req)
+      );
+
+      setSessionCookie(res, session.id, false);
+
+      res.status(201).json({ 
+        user: sanitizeUser(user),
+        message: "Account created successfully" 
+      });
+    } catch (error) {
+      console.error("Registration error:", error);
+      res.status(500).json({ error: "Failed to create account" });
+    }
+  });
+
+  // Login
+  app.post("/api/auth/login", rateLimit(10, 15), async (req, res) => {
+    try {
+      const result = loginSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ error: fromZodError(result.error).message });
+      }
+
+      const { email, password, rememberMe } = result.data;
+
+      const user = await storage.getUserByEmail(email);
+      if (!user || !user.passwordHash) {
+        return res.status(401).json({ error: "Invalid email or password" });
+      }
+
+      if (user.status === "locked") {
+        return res.status(403).json({ error: "Account is locked. Please contact support." });
+      }
+
+      const valid = await verifyPassword(password, user.passwordHash);
+      if (!valid) {
+        return res.status(401).json({ error: "Invalid email or password" });
+      }
+
+      const session = await storage.createSession(
+        user.id,
+        getSessionExpiry(rememberMe),
+        getClientIp(req),
+        getUserAgent(req)
+      );
+
+      setSessionCookie(res, session.id, rememberMe);
+
+      res.json({ 
+        user: sanitizeUser(user),
+        message: "Login successful" 
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ error: "Failed to log in" });
+    }
+  });
+
+  // Logout
+  app.post("/api/auth/logout", async (req: AuthenticatedRequest, res) => {
+    try {
+      if (req.session) {
+        await storage.revokeSession(req.session.id);
+      }
+      clearSessionCookie(res);
+      res.json({ message: "Logged out successfully" });
+    } catch (error) {
+      console.error("Logout error:", error);
+      clearSessionCookie(res);
+      res.json({ message: "Logged out" });
+    }
+  });
+
+  // Logout everywhere
+  app.post("/api/auth/logout-all", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (req.user) {
+        await storage.revokeAllUserSessions(req.user.id);
+      }
+      clearSessionCookie(res);
+      res.json({ message: "Logged out from all devices" });
+    } catch (error) {
+      console.error("Logout all error:", error);
+      res.status(500).json({ error: "Failed to logout from all devices" });
+    }
+  });
+
+  // Get current user
+  app.get("/api/auth/me", async (req: AuthenticatedRequest, res) => {
+    if (!req.user) {
+      return res.status(401).json({ user: null });
+    }
+    res.json({ user: sanitizeUser(req.user) });
+  });
+
+  // Get user sessions
+  app.get("/api/auth/sessions", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      const sessions = await storage.getUserSessions(req.user.id);
+      const currentSessionId = req.session?.id;
+      
+      const sessionList = sessions.map(s => ({
+        id: s.id,
+        isCurrent: s.id === currentSessionId,
+        lastSeenAt: s.lastSeenAt,
+        createdAt: s.createdAt,
+        ipAddress: s.ipAddress,
+        userAgent: s.userAgent,
+      }));
+      
+      res.json({ sessions: sessionList });
+    } catch (error) {
+      console.error("Get sessions error:", error);
+      res.status(500).json({ error: "Failed to get sessions" });
+    }
+  });
+
+  // Revoke a specific session
+  app.delete("/api/auth/sessions/:id", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const sessionId = req.params.id;
+      const sessions = await storage.getUserSessions(req.user!.id);
+      
+      if (!sessions.find(s => s.id === sessionId)) {
+        return res.status(404).json({ error: "Session not found" });
+      }
+      
+      await storage.revokeSession(sessionId);
+      
+      if (sessionId === req.session?.id) {
+        clearSessionCookie(res);
+      }
+      
+      res.json({ message: "Session revoked" });
+    } catch (error) {
+      console.error("Revoke session error:", error);
+      res.status(500).json({ error: "Failed to revoke session" });
+    }
+  });
+
+  // ============ PRODUCT ROUTES ============
+
   // Get all products
   app.get("/api/products", async (req, res) => {
     try {
@@ -70,8 +261,10 @@ export async function registerRoutes(
     }
   });
 
+  // ============ ORDER ROUTES ============
+
   // Create an order
-  app.post("/api/orders", async (req, res) => {
+  app.post("/api/orders", async (req: AuthenticatedRequest, res) => {
     try {
       const result = insertOrderSchema.safeParse(req.body);
       if (!result.success) {
@@ -80,11 +273,27 @@ export async function registerRoutes(
         });
       }
       
-      const order = await storage.createOrder(result.data);
+      const orderData = {
+        ...result.data,
+        userId: req.user?.id,
+      };
+      
+      const order = await storage.createOrder(orderData);
       res.status(201).json(order);
     } catch (error) {
       console.error("Error creating order:", error);
       res.status(500).json({ error: "Failed to create order" });
+    }
+  });
+
+  // Get user's orders
+  app.get("/api/orders", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const orders = await storage.getUserOrders(req.user!.id);
+      res.json(orders);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      res.status(500).json({ error: "Failed to fetch orders" });
     }
   });
 
