@@ -1,0 +1,15 @@
+First, clarity beats creativity every time. In the first screen (above the fold), a user must understand what the site is, who it is for, and why it matters without thinking. This means one dominant headline that states a clear outcome or benefit. Not a slogan. Not something vague. A direct promise. If someone cannot summarise your site in one sentence after reading the headline, it has already failed.
+
+Second, visual hierarchy must be ruthless. The eye should be forced down a path. Headline first. Supporting line second. Call to action third. Everything else is secondary. This is done with size, contrast, spacing, and restraint. One focal point only. Most websites fail because they try to show everything at once, which creates cognitive overload. Overload kills attention.
+
+Third, instant trust signals are non-negotiable. In the first 8 seconds, users subconsciously ask: “Is this legit?” You answer this with clean design, consistent typography, professional spacing, fast load times, and subtle credibility indicators. This can be client logos, usage numbers, security badges, or simply polished UI. Sloppy design signals risk. Risk makes people leave.
+
+Fourth, speed is psychological, not just technical. Even if a site loads fast, it must feel fast. Avoid heavy animations on entry. Use progressive loading. Show content immediately. Motion should guide attention, not delay it. If a user is waiting to understand what they are looking at, you are burning time.
+
+Fifth, emotion comes before logic. People do not stay because of features; they stay because something resonates. This can be confidence, simplicity, ambition, exclusivity, or relief from a problem. Your copy and visuals should trigger one dominant emotion. Trying to trigger multiple emotions weakens impact.
+
+Sixth, one clear action, not five. In the first screen, there should be exactly one primary call to action. “Get started,” “View demo,” “Browse products.” Choice paralysis destroys momentum. Once the user clicks once, you have won the attention battle.
+
+Seventh, remove friction aggressively. No popups on entry. No cookie walls blocking content. No walls of text. No forced sign-ups. Every obstacle in the first 10 seconds is a leak in attention. If something is not essential to understanding value, it does not belong above the fold.
+
+Finally, design for scanning, not reading. Users skim in an F or Z pattern. Short lines. Strong keywords. Visual anchors. If your content only works when read carefully, it is poorly designed for the web.
