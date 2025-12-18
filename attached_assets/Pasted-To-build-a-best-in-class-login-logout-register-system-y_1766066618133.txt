@@ -1,0 +1,202 @@
+To build a best-in-class login / logout / register system, you need two things at the same time: (1) airtight security, (2) zero-friction UX. Most sites fail by optimizing only one.
+
+Core decisions you must make upfront
+
+1) Auth model (pick one)
+
+Session cookies (recommended for websites): Server stores session; browser stores an HttpOnly cookie. Strong CSRF protection needed. Best security and control.
+
+JWT in cookies (ok, but easier to mess up): Still use HttpOnly cookies; avoid localStorage. Requires token rotation and revocation strategy.
+
+OAuth-only (Google/Discord/etc.): Great UX, fewer passwords, but you still need an internal user model.
+
+If you want “best” for a typical web store/portfolio: session cookies + optional OAuth.
+
+2) Account identifiers
+Use email as primary identifier. Username optional.
+
+Database design (minimum you need)
+
+users
+
+id (uuid)
+
+email (unique, lowercased)
+
+email_verified_at (nullable)
+
+password_hash (nullable if OAuth-only)
+
+created_at, updated_at
+
+status (active, locked, deleted)
+
+mfa_enabled (bool)
+
+sessions
+
+id (random 32+ bytes token id or uuid)
+
+user_id
+
+created_at
+
+expires_at
+
+last_seen_at
+
+ip, user_agent (optional, for security UI)
+
+revoked_at (nullable)
+
+email_verification_tokens / password_reset_tokens
+
+store hashed token (never plaintext), user_id, expires_at, used_at
+
+Register flow (best practice)
+UX
+
+Fields: Email + Password (and optional “Display name”)
+
+Password rules: length ≥ 12 recommended; avoid insane complexity requirements (they reduce security)
+
+Show password strength meter and “show password” toggle.
+
+Security (non-negotiable)
+
+Hash passwords with Argon2id (best) or bcrypt (acceptable). Never SHA.
+
+Rate-limit registration by IP + email.
+
+Bot protection: invisible challenge (Turnstile/reCAPTCHA) only when suspicious, not always.
+
+Email verification:
+
+Create user as “unverified”
+
+Send verification link with a single-use token (hashed in DB)
+
+Do not allow sensitive actions (purchases, downloads, password changes) until verified
+
+“Best” detail
+
+After registration:
+
+Log the user in immediately (optional), but gate sensitive actions until verification.
+
+Show: “Verify your email to activate downloads/checkout.”
+
+Login flow (best practice)
+UX
+
+Email + password
+
+“Remember me” (extends session expiry, not security)
+
+“Forgot password” link
+
+Optional OAuth buttons (Google/Discord) for speed
+
+Security
+
+Rate-limit login attempts by IP + account (e.g., 5 attempts then cooldown)
+
+Generic errors: “Invalid email or password” (never reveal which)
+
+Account lockout: temporary lock after repeated failures (avoid permanent lockouts)
+
+Session creation:
+
+On success, create session record in DB
+
+Set cookie: HttpOnly; Secure; SameSite=Lax (or Strict if possible)
+
+Rotate session on privilege change
+
+MFA (what “best” means)
+
+Offer MFA after login:
+
+Prefer TOTP authenticator apps (Google Authenticator, 1Password, etc.)
+
+Provide backup codes (one-time)
+
+Don’t force MFA for everyone; encourage it for admin/dev accounts
+
+Logout flow (best practice)
+
+Most sites do logout wrong.
+
+Minimum correct logout
+
+Delete the session cookie on client
+
+Mark the server session as revoked in DB
+
+“Logout everywhere”
+
+Add a security page:
+
+List active sessions (device + approximate location + last seen)
+
+Button: “Sign out of all devices” → revoke all sessions for that user
+
+Password reset (must be done correctly)
+
+“Forgot password” asks for email
+
+Always respond: “If an account exists, we sent a link”
+
+Link contains a random token stored hashed server-side
+
+Token expires fast (15–60 minutes)
+
+After reset: revoke all sessions (or at least all other sessions)
+
+Critical web security checklist
+
+If you skip any of these, your auth is not “best.”
+
+Cookies: HttpOnly, Secure, SameSite
+
+TLS everywhere (no exceptions)
+
+CSRF protection (for session-cookie auth):
+
+SameSite helps, but still use CSRF tokens for unsafe methods
+
+Input validation + parameterized queries
+
+Audit logging for:
+
+login success/fail
+
+password changes
+
+email changes
+
+MFA changes
+
+Email change requires re-auth + verification
+
+Brute force protection + IP reputation rules
+
+Never store plaintext tokens; store hashes
+
+Do not use localStorage for auth tokens
+
+Best UX patterns that increase conversion
+
+Keep forms short
+
+Inline validation (not after submit)
+
+Autofocus, proper autocomplete attributes:
+
+autocomplete="email", current-password, new-password"
+
+Clear “why” for verification
+
+Fast success state:
+
+After login: return user to where they were (checkout/product page), not homepage

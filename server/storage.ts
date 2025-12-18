@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, and, isNull, lt } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { 
   type User, 
@@ -7,16 +7,40 @@ import {
   type InsertProduct,
   type Order,
   type InsertOrder,
+  type Session,
   users, 
   products,
-  orders
+  orders,
+  sessions,
+  emailVerificationTokens,
+  passwordResetTokens
 } from "@shared/schema";
 
 export interface IStorage {
   // Users
   getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: string, data: Partial<User>): Promise<User | undefined>;
+  
+  // Sessions
+  createSession(userId: string, expiresAt: Date, ip?: string, userAgent?: string): Promise<Session>;
+  getSession(id: string): Promise<Session | undefined>;
+  getValidSession(id: string): Promise<(Session & { user: User }) | undefined>;
+  getUserSessions(userId: string): Promise<Session[]>;
+  updateSessionLastSeen(id: string): Promise<void>;
+  revokeSession(id: string): Promise<void>;
+  revokeAllUserSessions(userId: string): Promise<void>;
+  
+  // Email Verification
+  createEmailVerificationToken(userId: string, tokenHash: string, expiresAt: Date): Promise<void>;
+  getEmailVerificationToken(tokenHash: string): Promise<{ userId: string; expiresAt: Date; usedAt: Date | null } | undefined>;
+  markEmailVerificationTokenUsed(tokenHash: string): Promise<void>;
+  
+  // Password Reset
+  createPasswordResetToken(userId: string, tokenHash: string, expiresAt: Date): Promise<void>;
+  getPasswordResetToken(tokenHash: string): Promise<{ userId: string; expiresAt: Date; usedAt: Date | null } | undefined>;
+  markPasswordResetTokenUsed(tokenHash: string): Promise<void>;
   
   // Products
   getAllProducts(): Promise<Product[]>;
@@ -27,6 +51,7 @@ export interface IStorage {
   // Orders
   createOrder(order: InsertOrder): Promise<Order>;
   getOrderById(id: number): Promise<Order | undefined>;
+  getUserOrders(userId: string): Promise<Order[]>;
   updateOrderStatus(id: number, status: string, paymentIntentId?: string): Promise<Order | undefined>;
 }
 
@@ -37,14 +62,112 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username)).limit(1);
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email.toLowerCase())).limit(1);
     return user;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(insertUser).returning();
+    const [user] = await db.insert(users).values({
+      email: insertUser.email.toLowerCase(),
+      passwordHash: insertUser.passwordHash,
+      displayName: insertUser.displayName,
+    }).returning();
     return user;
+  }
+
+  async updateUser(id: string, data: Partial<User>): Promise<User | undefined> {
+    const [user] = await db.update(users)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  // Sessions
+  async createSession(userId: string, expiresAt: Date, ip?: string, userAgent?: string): Promise<Session> {
+    const [session] = await db.insert(sessions).values({
+      userId,
+      expiresAt,
+      ipAddress: ip,
+      userAgent,
+    }).returning();
+    return session;
+  }
+
+  async getSession(id: string): Promise<Session | undefined> {
+    const [session] = await db.select().from(sessions).where(eq(sessions.id, id)).limit(1);
+    return session;
+  }
+
+  async getValidSession(id: string): Promise<(Session & { user: User }) | undefined> {
+    const now = new Date();
+    const result = await db
+      .select()
+      .from(sessions)
+      .innerJoin(users, eq(sessions.userId, users.id))
+      .where(
+        and(
+          eq(sessions.id, id),
+          isNull(sessions.revokedAt),
+        )
+      )
+      .limit(1);
+    
+    if (!result.length) return undefined;
+    
+    const session = result[0].sessions;
+    const user = result[0].users;
+    
+    // Check if expired
+    if (session.expiresAt < now) return undefined;
+    
+    return { ...session, user };
+  }
+
+  async getUserSessions(userId: string): Promise<Session[]> {
+    return await db.select().from(sessions)
+      .where(and(eq(sessions.userId, userId), isNull(sessions.revokedAt)));
+  }
+
+  async updateSessionLastSeen(id: string): Promise<void> {
+    await db.update(sessions).set({ lastSeenAt: new Date() }).where(eq(sessions.id, id));
+  }
+
+  async revokeSession(id: string): Promise<void> {
+    await db.update(sessions).set({ revokedAt: new Date() }).where(eq(sessions.id, id));
+  }
+
+  async revokeAllUserSessions(userId: string): Promise<void> {
+    await db.update(sessions).set({ revokedAt: new Date() }).where(eq(sessions.userId, userId));
+  }
+
+  // Email Verification
+  async createEmailVerificationToken(userId: string, tokenHash: string, expiresAt: Date): Promise<void> {
+    await db.insert(emailVerificationTokens).values({ userId, tokenHash, expiresAt });
+  }
+
+  async getEmailVerificationToken(tokenHash: string): Promise<{ userId: string; expiresAt: Date; usedAt: Date | null } | undefined> {
+    const [token] = await db.select().from(emailVerificationTokens).where(eq(emailVerificationTokens.tokenHash, tokenHash)).limit(1);
+    return token ? { userId: token.userId, expiresAt: token.expiresAt, usedAt: token.usedAt } : undefined;
+  }
+
+  async markEmailVerificationTokenUsed(tokenHash: string): Promise<void> {
+    await db.update(emailVerificationTokens).set({ usedAt: new Date() }).where(eq(emailVerificationTokens.tokenHash, tokenHash));
+  }
+
+  // Password Reset
+  async createPasswordResetToken(userId: string, tokenHash: string, expiresAt: Date): Promise<void> {
+    await db.insert(passwordResetTokens).values({ userId, tokenHash, expiresAt });
+  }
+
+  async getPasswordResetToken(tokenHash: string): Promise<{ userId: string; expiresAt: Date; usedAt: Date | null } | undefined> {
+    const [token] = await db.select().from(passwordResetTokens).where(eq(passwordResetTokens.tokenHash, tokenHash)).limit(1);
+    return token ? { userId: token.userId, expiresAt: token.expiresAt, usedAt: token.usedAt } : undefined;
+  }
+
+  async markPasswordResetTokenUsed(tokenHash: string): Promise<void> {
+    await db.update(passwordResetTokens).set({ usedAt: new Date() }).where(eq(passwordResetTokens.tokenHash, tokenHash));
   }
 
   // Products
@@ -75,6 +198,10 @@ export class DatabaseStorage implements IStorage {
   async getOrderById(id: number): Promise<Order | undefined> {
     const [order] = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
     return order;
+  }
+
+  async getUserOrders(userId: string): Promise<Order[]> {
+    return await db.select().from(orders).where(eq(orders.userId, userId));
   }
 
   async updateOrderStatus(id: number, status: string, paymentIntentId?: string): Promise<Order | undefined> {
