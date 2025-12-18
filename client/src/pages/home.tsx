@@ -13,7 +13,7 @@ import { HeroSlideshow } from "@/components/hero-slideshow";
 import { motion, AnimatePresence } from "framer-motion";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-type ProductCategory = 'All' | 'FiveM Resources' | 'Applications' | 'Web Templates' | 'Developer Tools' | 'Misc';
+type ProductCategory = 'All' | 'Game Scripts' | 'Applications' | 'Web Templates' | 'Developer Tools' | 'Misc';
 type PriceSort = 'default' | 'low-high' | 'high-low' | 'free-first';
 
 // Category styling with full theme
@@ -35,7 +35,7 @@ const categoryConfig: Record<ProductCategory, {
     glow: 'shadow-white/10',
     badge: 'bg-white/10 text-white border-white/20'
   },
-  'FiveM Resources': { 
+  'Game Scripts': { 
     accent: 'text-cyan-400', 
     icon: Server, 
     gradient: 'from-cyan-500/20 via-blue-500/10 to-transparent',
@@ -100,10 +100,10 @@ export default function Home() {
 
   const categories: ProductCategory[] = [
     'All',
-    'FiveM Resources',
-    'Applications',
     'Web Templates',
     'Developer Tools',
+    'Game Scripts',
+    'Applications',
     'Misc'
   ];
 
@@ -152,26 +152,26 @@ export default function Home() {
             transition={{ duration: 0.5 }}
           >
             <Badge className="mb-6 px-5 py-2 bg-white/5 backdrop-blur-xl text-primary border-primary/30 rounded-full font-medium">
-              <Shield className="h-4 w-4 mr-2" />
-              Production-Ready Standard
+              <Code2 className="h-4 w-4 mr-2" />
+              Professional Developer
             </Badge>
             <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-white leading-tight">
-              Ship Production-Ready Scripts.<br/>
+              Quality Code, Ready to Ship.<br/>
               <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-amber-400 bg-clip-text text-transparent">
-                Without the Hassle.
+                Built by a Pro.
               </span>
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
-              Most servers fail because their scripts were never meant to scale. 
-              <span className="text-white font-medium"> Yours won't.</span>
+              Templates, tools, and scripts crafted with care. 
+              <span className="text-white font-medium"> Production-ready from day one.</span>
             </p>
             <Button 
               size="lg" 
               className="h-16 px-12 text-lg rounded-full bg-white text-black hover:bg-white/90 shadow-2xl shadow-white/20 font-semibold hover:scale-105 transition-all duration-300" 
               asChild
             >
-              <a href="#mortal-plugins">
-                Explore Live-Ready Tools <ArrowRight className="ml-2 h-5 w-5" />
+              <a href="#products">
+                Browse Products <ArrowRight className="ml-2 h-5 w-5" />
               </a>
             </Button>
           </motion.div>
@@ -193,8 +193,8 @@ export default function Home() {
                 <CheckCircle2 className="h-7 w-7 text-emerald-400" />
               </div>
               <div>
-                <span className="font-display text-xl font-bold text-white">Production-Ready Guarantee</span>
-                <p className="text-sm text-muted-foreground">Every script battle-tested</p>
+                <span className="font-display text-xl font-bold text-white">Quality Guaranteed</span>
+                <p className="text-sm text-muted-foreground">Every product tested & documented</p>
               </div>
             </motion.div>
             <div className="hidden md:block h-12 w-px bg-white/10" />
@@ -204,15 +204,15 @@ export default function Home() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              Tested on live servers with 100+ concurrent players. 
-              <span className="text-white font-medium"> If it breaks, we fix it within 24 hours.</span>
+              Clean code, proper documentation, and responsive support. 
+              <span className="text-white font-medium"> Issues get fixed fast.</span>
             </motion.p>
           </div>
         </div>
       </section>
 
-      {/* Mortal Plugins (Products) Section */}
-      <section id="mortal-plugins" className="py-24 relative overflow-hidden">
+      {/* Products Section */}
+      <section id="products" className="py-24 relative overflow-hidden">
         {/* Dynamic background */}
         <motion.div 
           className={cn("absolute inset-0 transition-all duration-700 bg-gradient-to-b to-transparent", currentConfig.gradient)}
@@ -260,11 +260,11 @@ export default function Home() {
                 </div>
                 <div>
                   <h2 className="font-display text-3xl md:text-4xl font-bold text-white">
-                    {activeCategory === 'All' ? 'Mortal Plugins' : activeCategory}
+                    {activeCategory === 'All' ? 'All Products' : activeCategory}
                   </h2>
                   <p className="text-muted-foreground">
                     {activeCategory === 'All' 
-                      ? 'Browse all production-ready resources' 
+                      ? 'Browse all available products' 
                       : `${filteredAndSortedProducts.length} products available`}
                   </p>
                 </div>
@@ -452,10 +452,10 @@ export default function Home() {
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { label: "Commits", value: "4,200+", accent: "text-cyan-400", bg: "bg-cyan-500/10", border: "border-cyan-500/30", gradient: "from-cyan-500/20" },
-              { label: "Servers", value: "150+", accent: "text-violet-400", bg: "bg-violet-500/10", border: "border-violet-500/30", gradient: "from-violet-500/20" },
-              { label: "Community", value: "12k", accent: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/30", gradient: "from-amber-500/20" },
-              { label: "Uptime", value: "99.9%", accent: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/30", gradient: "from-emerald-500/20" }
+              { label: "Projects", value: "50+", accent: "text-cyan-400", bg: "bg-cyan-500/10", border: "border-cyan-500/30", gradient: "from-cyan-500/20" },
+              { label: "Happy Clients", value: "200+", accent: "text-violet-400", bg: "bg-violet-500/10", border: "border-violet-500/30", gradient: "from-violet-500/20" },
+              { label: "Downloads", value: "5k+", accent: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/30", gradient: "from-amber-500/20" },
+              { label: "Satisfaction", value: "100%", accent: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/30", gradient: "from-emerald-500/20" }
             ].map((stat, i) => (
               <motion.div 
                 key={i}
@@ -492,9 +492,9 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <span className="text-muted-foreground">If your server is live,</span>{" "}
+            <span className="text-muted-foreground">Great projects deserve</span>{" "}
             <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-amber-400 bg-clip-text text-transparent font-bold">
-              your code should be ready.
+              great code.
             </span>
           </motion.p>
         </div>
@@ -508,10 +508,10 @@ export default function Home() {
           <div className="flex flex-col md:flex-row justify-between gap-12">
             <div className="space-y-6 max-w-sm">
               <h3 className="font-display text-2xl font-bold bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
-                Danielillis.Domain
+                Daniel.Domain
               </h3>
               <p className="text-muted-foreground leading-relaxed">
-                The standard for production-ready FiveM infrastructure. Built for developers who ship.
+                Quality code, templates, and tools. Built by a professional developer who ships.
               </p>
               <div className="flex gap-3">
                 {[
@@ -538,14 +538,14 @@ export default function Home() {
               <div>
                 <h4 className="font-display font-bold text-white mb-4">Products</h4>
                 <ul className="space-y-3 text-muted-foreground">
-                  <li className="hover:text-cyan-400 cursor-pointer transition-colors flex items-center gap-2">
-                    <Server className="h-3.5 w-3.5" /> FiveM Scripts
-                  </li>
                   <li className="hover:text-violet-400 cursor-pointer transition-colors flex items-center gap-2">
                     <Layout className="h-3.5 w-3.5" /> Web Templates
                   </li>
                   <li className="hover:text-amber-400 cursor-pointer transition-colors flex items-center gap-2">
-                    <Code2 className="h-3.5 w-3.5" /> Dev Tools
+                    <Code2 className="h-3.5 w-3.5" /> Developer Tools
+                  </li>
+                  <li className="hover:text-cyan-400 cursor-pointer transition-colors flex items-center gap-2">
+                    <Server className="h-3.5 w-3.5" /> Game Scripts
                   </li>
                 </ul>
               </div>

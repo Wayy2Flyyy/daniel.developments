@@ -24,8 +24,8 @@ export function Navbar() {
   }, []);
 
   const navLinks = [
-    { href: "/#work", label: "Work" },
-    { href: "/#mortal-plugins", label: "Mortal Plugins" },
+    { href: "/#products", label: "Products" },
+    { href: "/#work", label: "Portfolio" },
     { href: "/#about", label: "About" },
   ];
 
@@ -49,7 +49,7 @@ export function Navbar() {
               <Terminal className="h-4 w-4 text-primary" />
             </div>
             <span className="font-display text-xl font-bold tracking-tight text-white">
-              Danielillis<span className="text-primary">.Domain</span>
+              Daniel<span className="text-primary">.Domain</span>
             </span>
           </div>
         </Link>
