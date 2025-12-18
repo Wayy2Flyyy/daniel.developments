@@ -1,0 +1,29 @@
+Danielillis Domain (your website + portfolio platform)
+
+Danielillis Domain is the web front-end of the Daniel Domain identity. It’s not “just a site”—it’s your showroom, sales surface, credibility engine, and portfolio all in one. You’ve repeatedly aimed for a one-page, high-impact design that looks trustworthy and modern (glassy/iOS-inspired, smooth animations, clean typography), and that can scale into sections like achievements/certifications, products/services, roadmap, and proof of work. The core objective here is conversion and perception: when someone lands on it, it should instantly communicate competence, taste, and professionalism—and make it obvious how to contact you, buy from you, or follow your work.
+
+Mortal Plugins (your commercial product line)
+
+Mortal Plugins is your “shipping brand” for sellable/usable deliverables—scripts, applications, web templates, and packaged tooling. This is the side that focuses on productization: access systems, distribution (zips, installers), clear dev notes, readmes, changelogs, and a support pipeline through Discord. The direction you’ve pushed is a membership-style model (paid access) with “most up-to-date scripts” and a public-facing presentation that doesn’t read like AI filler—short, human, and confident. Mortal Plugins is where you turn your engineering into a store-like experience: consistent naming, versioning, documentation, and a support identity rather than random one-off releases.
+
+FiveM / CFX.re engineering ecosystem (your largest technical pillar)
+
+This is the deepest “systems” area you’ve built around: standalone/QBCore-based development and a long list of advanced modules intended to feel like a modern, cohesive framework rather than scattered resources.
+
+You’ve worked on (and repeatedly upgraded) core infrastructure themes: modular architecture, performance, clean client-server events, permissions, database integration, and exploit prevention. On top of that foundation, you’ve pursued multiple “product-grade” gameplay systems: a standalone HUD, advanced chat UI (iOS-inspired), admin menu (controller-first, F4 trigger), money/robbery economy with cooldowns and silent alarms, injury realism, healing/bandage mechanics with progress bars and emotes, and door lock/unlock systems tied to MLO/YMAP doors with admin-configurable access. The common thread is that you don’t want “basic scripts”—you want a framework-level standard: scalable, modular, documented, and visually modern.
+
+Discord bots and community automation (your ops layer)
+
+You’ve built bots as operational infrastructure for communities and projects: dynamic status, slash commands, moderation tools (purge/delete), and the longer-term vision of “advanced” bot capability that feels like a real product panel rather than scattered commands. This ties directly into your FiveM and product brands because Discord becomes your support hub, verification hub, and announcement pipeline. Your bots are meant to reduce manual admin work while also making the community feel active and polished.
+
+“100Racks” server rebrand project (your server productization attempt)
+
+100Racks is essentially your attempt to take a purchased base server and turn it into your own branded, differentiated product. That includes the rebrand itself (name, identity), plus the technical rewiring: frameworks, standalone systems, custom scripts, UI overhauls, and server-side structure that moves it away from “generic pack” territory. The strategic value of 100Racks is that it’s a living demo environment—proof that your systems work in a real server context, not just in theory.
+
+“Bored.” (your premium-feeling simple game)
+
+“Bored.” is intentionally simple at the surface—fast dopamine, funny, casual—but you’ve insisted on premium execution: smooth UI, satisfying feedback, progression systems, and enough depth (achievements, prestige, encyclopedia, narrator, themes, pets, charms, rarity effects, combo mechanics) to keep attention longer than a typical throwaway boredom game. The project is basically a design challenge: make something “small” feel expensive. You also leaned toward a full desktop-app direction with local persistence and a professional installer/update flow, which is a strong product mindset rather than a hobby prototype mindset.
+
+Custom desktop applications (utility + product-grade UI)
+
+Separate from the game, you’ve pursued desktop apps in Python with high design standards—especially login systems and a runtime/app usage tracker. The tracker concept is serious: scanning running background apps, automatically starting/stopping timers, favorites, lifetime stats, logs, saved defaults, and a modern OS-like UI. This category is about creating “real software” that looks credible, not tutorial-grade interfaces.
