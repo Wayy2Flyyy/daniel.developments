@@ -1,4 +1,3 @@
-import { Link } from "wouter";
 import type { Product } from "@shared/schema";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,13 +7,14 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { ProductDetailDialog } from "@/components/product-detail-dialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-// Outcome lines - persuasive, not informational
+// Outcome lines - persuasive, results-focused
 const outcomeLines: Record<string, string> = {
-  "Mortal Admin Panel": "Full server control in seconds",
-  "Mortal HUD System": "Deploy in under 5 minutes",
-  "Mortal Chat iOS": "Eliminates chat spam instantly",
-  "Mortal Economy Core": "Zero exploits. Period.",
+  "Mortal Admin Panel": "Cuts admin workload by 60%",
+  "Mortal HUD System": "Deploys in under 5 minutes",
+  "Mortal Chat iOS": "Eliminates spam instantly",
+  "Mortal Economy Core": "Zero exploits. Guaranteed.",
   "Advanced Robbery System": "Engaging heists, no setup pain",
   "Server Launcher Pro": "Your brand, zero dev time",
   "Log Viewer Desktop": "Find issues 10x faster",
@@ -87,7 +87,7 @@ export function ProductCard({ product, featured = false }: ProductCardProps) {
     );
   }
 
-  // Product Card - Persuasive, not informational
+  // Product Card - Persuasive with authority
   return (
     <>
       <motion.div
@@ -102,17 +102,25 @@ export function ProductCard({ product, featured = false }: ProductCardProps) {
               <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20 group-hover:scale-110 transition-transform duration-300">
                  <Code className="h-6 w-6 text-primary" />
               </div>
-              <Badge variant="outline" className="border-primary/30 text-primary text-xs bg-primary/5">
-                Verified
-              </Badge>
+              {/* Verified badge with authority tooltip */}
+              <Tooltip>
+                <TooltipTrigger>
+                  <Badge variant="outline" className="border-primary/30 text-primary text-xs bg-primary/5 cursor-help">
+                    Verified
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent className="bg-background border-white/10">
+                  <p className="text-xs">Verified under Production-Ready Standard</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
             
             <h3 className="font-display text-xl font-bold text-white mb-2 line-clamp-1">{product.name}</h3>
             
-            {/* Outcome line - bold, persuasive */}
-            <div className="flex items-center gap-2 mb-4 text-primary">
-              <Zap className="h-4 w-4" />
-              <span className="text-sm font-medium">{outcome}</span>
+            {/* Outcome line - bold, persuasive, highly visible */}
+            <div className="flex items-center gap-2 mb-4 bg-primary/10 rounded-md px-3 py-2 border border-primary/20">
+              <Zap className="h-4 w-4 text-primary flex-shrink-0" />
+              <span className="text-sm font-semibold text-primary">{outcome}</span>
             </div>
             
             <p className="text-muted-foreground text-sm mb-6 line-clamp-2 flex-1">
