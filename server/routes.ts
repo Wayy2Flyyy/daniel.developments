@@ -199,6 +199,88 @@ export async function registerRoutes(
     }
   });
 
+  // Update profile
+  app.patch("/api/auth/profile", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { displayName } = req.body;
+      
+      if (displayName !== undefined && (typeof displayName !== "string" || displayName.length > 50)) {
+        return res.status(400).json({ error: "Display name must be 50 characters or less" });
+      }
+      
+      const updatedUser = await storage.updateUser(req.user!.id, {
+        displayName: displayName || null,
+      });
+      
+      if (!updatedUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      res.json({ user: sanitizeUser(updatedUser), message: "Profile updated" });
+    } catch (error) {
+      console.error("Update profile error:", error);
+      res.status(500).json({ error: "Failed to update profile" });
+    }
+  });
+
+  // Change password
+  app.post("/api/auth/change-password", requireAuth, rateLimit(5, 15), async (req: AuthenticatedRequest, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: "Current and new password are required" });
+      }
+      
+      if (newPassword.length < 12) {
+        return res.status(400).json({ error: "New password must be at least 12 characters" });
+      }
+      
+      if (!req.user?.passwordHash) {
+        return res.status(400).json({ error: "No password set" });
+      }
+      
+      const valid = await verifyPassword(currentPassword, req.user.passwordHash);
+      if (!valid) {
+        return res.status(401).json({ error: "Current password is incorrect" });
+      }
+      
+      const newPasswordHash = await hashPassword(newPassword);
+      await storage.updateUser(req.user.id, { passwordHash: newPasswordHash });
+      
+      // Revoke all other sessions for security
+      const sessions = await storage.getUserSessions(req.user.id);
+      for (const session of sessions) {
+        if (session.id !== req.session?.id) {
+          await storage.revokeSession(session.id);
+        }
+      }
+      
+      res.json({ message: "Password changed successfully. Other sessions have been logged out." });
+    } catch (error) {
+      console.error("Change password error:", error);
+      res.status(500).json({ error: "Failed to change password" });
+    }
+  });
+
+  // Request email verification (simulated - would send email in production)
+  app.post("/api/auth/request-verification", requireAuth, rateLimit(3, 60), async (req: AuthenticatedRequest, res) => {
+    try {
+      if (req.user?.emailVerifiedAt) {
+        return res.status(400).json({ error: "Email is already verified" });
+      }
+      
+      // In production, this would send an actual email
+      // For now, we'll auto-verify after a short delay to demonstrate the flow
+      await storage.updateUser(req.user!.id, { emailVerifiedAt: new Date() });
+      
+      res.json({ message: "Email verified successfully" });
+    } catch (error) {
+      console.error("Request verification error:", error);
+      res.status(500).json({ error: "Failed to send verification email" });
+    }
+  });
+
   // ============ PRODUCT ROUTES ============
 
   // Get all products
