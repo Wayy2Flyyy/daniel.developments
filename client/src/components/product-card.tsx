@@ -1,4 +1,3 @@
-import type { Product } from "@shared/schema";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart-context";
@@ -8,6 +7,18 @@ import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { ProductDetailDialog } from "@/components/product-detail-dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
+// Base product type that works for both DB products and local portfolio items
+interface BaseProduct {
+  id: number;
+  name: string;
+  price: number;
+  description: string;
+  image: string;
+  category: string;
+  features: string[];
+  type: string;
+}
 
 // Outcome lines - persuasive, results-focused
 const outcomeLines: Record<string, string> = {
@@ -31,7 +42,7 @@ const outcomeLines: Record<string, string> = {
 };
 
 interface ProductCardProps {
-  product: Product;
+  product: BaseProduct;
   featured?: boolean;
 }
 

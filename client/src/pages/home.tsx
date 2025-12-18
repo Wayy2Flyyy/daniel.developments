@@ -1,14 +1,15 @@
 import { Navbar } from "@/components/navbar";
 import { ProductCard } from "@/components/product-card";
-import { heroImage, portfolioProjects } from "@/lib/products";
+import { portfolioProjects, type Product as LocalProduct } from "@/lib/products";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ChevronDown, Github, Twitter, Disc, Filter, Loader2, Shield, Zap, Users, CheckCircle2, Quote, ExternalLink } from "lucide-react";
+import { ArrowRight, Github, Twitter, Disc, Filter, Loader2, Shield, CheckCircle2, Quote, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { fetchProducts } from "@/lib/api";
 import type { Product } from "@shared/schema";
+import { HeroSlideshow } from "@/components/hero-slideshow";
 
 type ProductCategory = 'All' | 'FiveM Resources' | 'Applications' | 'Web Templates' | 'Developer Tools' | 'Misc';
 
@@ -40,42 +41,23 @@ export default function Home() {
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <Navbar />
       
-      {/* Hero Section - Challenges, doesn't just explain */}
-      <section className="relative min-h-[90vh] w-full flex items-center justify-center overflow-hidden pt-16">
-        <div className="absolute inset-0 z-0">
-          <img 
-            src={heroImage} 
-            alt="" 
-            className="h-full w-full object-cover opacity-40"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
-        </div>
-        
-        <div className="container relative z-10 px-6 mx-auto flex flex-col items-center text-center">
-          {/* Authority badge */}
-          <Badge className="mb-6 px-4 py-1.5 bg-primary/10 text-primary border-primary/30 rounded-full font-medium">
+      {/* Hero Slideshow - Advanced FiveM/CFX.re Ecosystem Showcase */}
+      <HeroSlideshow />
+
+      {/* CTA Section - Bridge from slideshow to products */}
+      <section className="py-16 bg-gradient-to-b from-background to-secondary/20 border-b border-white/5">
+        <div className="container mx-auto px-6 text-center">
+          <Badge className="mb-4 px-4 py-1.5 bg-primary/10 text-primary border-primary/30 rounded-full font-medium">
             <Shield className="h-3.5 w-3.5 mr-2" />
             Production-Ready Standard
           </Badge>
-
-          {/* Dominant headline */}
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-4 text-white max-w-4xl leading-[1.1]">
-            Ship Production-Ready Scripts.<br/>
-            <span className="text-primary">Without the Hassle.</span>
-          </h1>
-
-          {/* Authority + Assertiveness */}
-          <p className="text-lg md:text-xl text-white/80 font-medium mb-2">
-            Built for production. Anything less breaks servers.
-          </p>
-
-          {/* Friction-calling line - creates problem awareness */}
-          <p className="text-base text-muted-foreground max-w-lg mb-8">
+          <h2 className="font-display text-3xl md:text-4xl font-bold mb-4 text-white">
+            Ship Production-Ready Scripts. <span className="text-primary">Without the Hassle.</span>
+          </h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
             Most servers fail because their scripts were never meant to scale. 
             <span className="text-white/70"> Yours won't.</span>
           </p>
-
-          {/* Decisive CTA */}
           <Button 
             size="lg" 
             className="h-14 px-10 text-lg rounded-full bg-white text-black hover:bg-white/90 shadow-xl shadow-white/10 font-semibold" 
@@ -85,31 +67,6 @@ export default function Home() {
               Explore Live-Ready Tools <ArrowRight className="ml-2 h-5 w-5" />
             </a>
           </Button>
-
-          {/* Differentiation */}
-          <p className="mt-6 text-sm text-muted-foreground italic">
-            Not templates. Not experiments. Production-tested code.
-          </p>
-
-          {/* Trust signals - BOLDER, more aggressive */}
-          <div className="flex flex-wrap justify-center gap-10 mt-12 text-sm">
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
-              <span className="text-white"><span className="font-bold text-lg">150+</span> Active Servers</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-primary" />
-              <span className="text-white"><span className="font-bold text-lg">0.01ms</span> Performance</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
-              <span className="text-white"><span className="font-bold">Actively</span> Exploit-Hardened</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce opacity-50">
-          <ChevronDown className="h-5 w-5 text-muted-foreground" />
         </div>
       </section>
 

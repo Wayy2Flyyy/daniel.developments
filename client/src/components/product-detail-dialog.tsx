@@ -2,13 +2,23 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import type { Product } from "@shared/schema";
 import { useCart } from "@/lib/cart-context";
 import { ShoppingCart, Check, X, Terminal, ShieldCheck, Zap } from "lucide-react";
 import { useState } from "react";
 
+interface BaseProduct {
+  id: number;
+  name: string;
+  price: number;
+  description: string;
+  image: string;
+  category: string;
+  features: string[];
+  type: string;
+}
+
 interface ProductDetailDialogProps {
-  product: Product;
+  product: BaseProduct;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
