@@ -1,8 +1,15 @@
-# Danielillis Domain
+# Daniel.Domain
 
 ## Overview
 
-Danielillis Domain is a digital showroom and e-commerce platform for selling premium FiveM scripts, web templates, and developer tools. The application features a modern portfolio showcase, product catalog with shopping cart functionality, secure user authentication, and a checkout system. Built as a full-stack TypeScript application with React frontend and Express backend.
+Daniel.Domain is a professional developer portfolio and e-commerce platform for selling quality code, web templates, developer tools, game scripts, and custom applications. The application features a modern portfolio showcase, product catalog with shopping cart functionality, secure user authentication, and a checkout system. Built as a full-stack TypeScript application with React frontend and Express backend.
+
+## Branding
+
+- **Site Name**: Daniel.Domain
+- **Positioning**: Professional developer selling quality, production-ready code
+- **Product Categories** (in order): Web Templates, Developer Tools, Game Scripts, Applications, Misc
+- **Design Philosophy**: "Clarity beats creativity" with security-focused professional feel
 
 ## User Preferences
 
