@@ -232,8 +232,17 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Current and new password are required" });
       }
       
+      // Validate password complexity (must match UI requirements)
       if (newPassword.length < 12) {
         return res.status(400).json({ error: "New password must be at least 12 characters" });
+      }
+      
+      if (!/\d/.test(newPassword)) {
+        return res.status(400).json({ error: "New password must contain at least one number" });
+      }
+      
+      if (!/[A-Z]/.test(newPassword)) {
+        return res.status(400).json({ error: "New password must contain at least one uppercase letter" });
       }
       
       if (!req.user?.passwordHash) {
