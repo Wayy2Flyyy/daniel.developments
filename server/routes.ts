@@ -16,6 +16,7 @@ import {
   requireAuth,
   rateLimit,
   sanitizeUser,
+  DUMMY_HASH,
   type AuthenticatedRequest,
 } from "./auth.js";
 
@@ -81,17 +82,17 @@ export async function registerRoutes(
       const { email, password, rememberMe } = result.data;
 
       const user = await storage.getUserByEmail(email);
-      if (!user || !user.passwordHash) {
+      
+      // Always perform bcrypt comparison to prevent timing attacks
+      const hashToCompare = user?.passwordHash || DUMMY_HASH;
+      const valid = await verifyPassword(password, hashToCompare);
+      
+      if (!user || !user.passwordHash || !valid) {
         return res.status(401).json({ error: "Invalid email or password" });
       }
 
       if (user.status === "locked") {
         return res.status(403).json({ error: "Account is locked. Please contact support." });
-      }
-
-      const valid = await verifyPassword(password, user.passwordHash);
-      if (!valid) {
-        return res.status(401).json({ error: "Invalid email or password" });
       }
 
       const session = await storage.createSession(

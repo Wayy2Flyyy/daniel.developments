@@ -9,6 +9,8 @@ const SESSION_DURATION_DAYS = 7;
 const REMEMBER_ME_DURATION_DAYS = 30;
 const BCRYPT_ROUNDS = 12;
 
+export const DUMMY_HASH = "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.6FU8qB.6gJDOzS";
+
 export async function hashPassword(password: string): Promise<string> {
   return hash(password, BCRYPT_ROUNDS);
 }
