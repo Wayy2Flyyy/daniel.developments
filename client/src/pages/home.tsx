@@ -2,30 +2,33 @@ import { Navbar } from "@/components/navbar";
 import { ProductCard } from "@/components/product-card";
 import { portfolioProjects } from "@/lib/products";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Github, Twitter, Disc, Loader2, Shield, CheckCircle2, Zap, Users, Code2, Server, Sparkles, Layout, SlidersHorizontal } from "lucide-react";
+import { ArrowRight, Github, Twitter, Disc, Loader2, Shield, CheckCircle2, Zap, Users, Code2, Server, Sparkles, Layout, SlidersHorizontal, Package, Search, X, Filter, Grid3X3, DollarSign } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { fetchProducts } from "@/lib/api";
 import type { Product } from "@shared/schema";
 import { HeroSlideshow } from "@/components/hero-slideshow";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-const sectionConfig: Record<string, { title: string; categories: string[] }> = {
-  'core': { 
-    title: 'Core Systems',
-    categories: ['Game Scripts']
-  },
-  'utilities': { 
-    title: 'Utilities & Tools',
-    categories: ['Developer Tools', 'Applications']
-  },
-  'assets': { 
-    title: 'Templates & Assets',
-    categories: ['Web Templates', 'Misc']
-  },
-};
+const categoryTabs = [
+  { id: 'all', label: 'All', icon: Grid3X3 },
+  { id: 'Web Templates', label: 'Web Templates', icon: Layout },
+  { id: 'Developer Tools', label: 'Developer Tools', icon: Code2 },
+  { id: 'Game Scripts', label: 'Game Scripts', icon: Server },
+  { id: 'Applications', label: 'Applications', icon: Package },
+  { id: 'Misc', label: 'Misc', icon: Sparkles },
+];
+
+const priceTiers = [
+  { id: 'free', label: 'Free', min: 0, max: 0 },
+  { id: 'budget', label: 'Under $25', min: 1, max: 24 },
+  { id: 'mid', label: '$25 - $50', min: 25, max: 50 },
+  { id: 'premium', label: '$50+', min: 51, max: Infinity },
+];
 
 const featuredProductNames = [
   "Anti-Cheat Core (Lua)",
@@ -39,28 +42,62 @@ export default function Home() {
     queryFn: fetchProducts,
   });
 
-  const productsBySection = useMemo(() => {
-    const sections: Record<string, Product[]> = {
-      core: [],
-      utilities: [],
-      assets: []
-    };
-    
-    products.forEach((product: Product) => {
-      for (const [key, config] of Object.entries(sectionConfig)) {
-        if (config.categories.includes(product.category)) {
-          sections[key].push(product);
-          break;
-        }
-      }
-    });
-    
-    return sections;
-  }, [products]);
+  const [activeTab, setActiveTab] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedPriceTiers, setSelectedPriceTiers] = useState<string[]>([]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const featuredProducts = useMemo(() => {
     return products.filter((p: Product) => featuredProductNames.includes(p.name));
   }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    let filtered = products;
+    
+    if (activeTab !== 'all') {
+      filtered = filtered.filter((p: Product) => p.category === activeTab);
+    }
+    
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((p: Product) => 
+        p.name.toLowerCase().includes(query) || 
+        p.description.toLowerCase().includes(query)
+      );
+    }
+    
+    if (selectedPriceTiers.length > 0) {
+      filtered = filtered.filter((p: Product) => {
+        return selectedPriceTiers.some(tierId => {
+          const tier = priceTiers.find(t => t.id === tierId);
+          if (!tier) return false;
+          return p.price >= tier.min && p.price <= tier.max;
+        });
+      });
+    }
+    
+    return filtered;
+  }, [products, activeTab, searchQuery, selectedPriceTiers]);
+
+  const togglePriceTier = (tierId: string) => {
+    setSelectedPriceTiers(prev => 
+      prev.includes(tierId) 
+        ? prev.filter(id => id !== tierId)
+        : [...prev, tierId]
+    );
+  };
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setSelectedPriceTiers([]);
+  };
+
+  const hasActiveFilters = searchQuery.trim() || selectedPriceTiers.length > 0;
+
+  const getCategoryCount = (categoryId: string) => {
+    if (categoryId === 'all') return products.length;
+    return products.filter((p: Product) => p.category === categoryId).length;
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -145,48 +182,269 @@ export default function Home() {
 
       {/* Products Section */}
       <section id="products" className="py-28 relative overflow-hidden">
-        <div className="absolute inset-0 bg-secondary/30" />
+        <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/5 via-background to-background" />
+        <div className="absolute inset-0">
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-cyan-500/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-violet-500/5 rounded-full blur-3xl" />
+        </div>
         
         <div className="container mx-auto px-6 lg:px-8 relative z-10 max-w-7xl">
-          {/* Simple Header */}
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-white">
-              All Products
-            </h2>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="text-muted-foreground hover:text-white"
-            >
-              <SlidersHorizontal className="h-4 w-4 mr-2" />
-              Filter
-            </Button>
-          </div>
-          
-          {/* Visual Anchor with Accent Underline */}
-          <div className="mb-16">
-            <p className="text-white/50 text-sm mb-3">
-              Every product below is actively used in live environments.
-            </p>
-            <div className="h-px w-32 bg-gradient-to-r from-cyan-500/60 to-transparent" />
+          {/* Hero-Style Section Header */}
+          <motion.div 
+            className="mb-12 p-8 rounded-3xl bg-cyan-500/10 border border-cyan-500/30 backdrop-blur-xl shadow-2xl shadow-cyan-500/10"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <div className="h-16 w-16 rounded-2xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center">
+                  <Package className="h-8 w-8 text-cyan-400" />
+                </div>
+                <div>
+                  <h2 className="font-display text-3xl md:text-4xl font-bold text-white">Product Catalog</h2>
+                  <p className="text-muted-foreground">Production-ready code, tested in live environments</p>
+                </div>
+              </div>
+              
+              {/* Stats Chips */}
+              <div className="flex flex-wrap gap-3">
+                <motion.div 
+                  className="px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <span className="text-cyan-400 font-bold">{products.length}</span>
+                  <span className="text-white/60 ml-2 text-sm">Products</span>
+                </motion.div>
+                <motion.div 
+                  className="px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <span className="text-emerald-400 font-bold">{categoryTabs.length - 1}</span>
+                  <span className="text-white/60 ml-2 text-sm">Categories</span>
+                </motion.div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Category Tabs + Smart Filter */}
+          <div className="mb-10">
+            {/* Tabs Row */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-6">
+              <div className="flex flex-wrap gap-2">
+                {categoryTabs.map((tab, index) => {
+                  const IconComponent = tab.icon;
+                  const isActive = activeTab === tab.id;
+                  const count = getCategoryCount(tab.id);
+                  
+                  return (
+                    <motion.button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={cn(
+                        "relative px-4 py-2.5 rounded-xl flex items-center gap-2 text-sm font-medium transition-all duration-300",
+                        isActive 
+                          ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40" 
+                          : "bg-white/5 text-white/60 border border-white/10 hover:bg-white/10 hover:text-white"
+                      )}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      data-testid={`tab-${tab.id}`}
+                    >
+                      <IconComponent className="h-4 w-4" />
+                      <span className="hidden sm:inline">{tab.label}</span>
+                      <span className={cn(
+                        "ml-1 px-1.5 py-0.5 rounded-md text-xs",
+                        isActive ? "bg-cyan-500/30 text-cyan-300" : "bg-white/10 text-white/40"
+                      )}>
+                        {count}
+                      </span>
+                      {isActive && (
+                        <motion.div
+                          className="absolute inset-0 rounded-xl border-2 border-cyan-500/50"
+                          layoutId="activeTab"
+                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                        />
+                      )}
+                    </motion.button>
+                  );
+                })}
+              </div>
+
+              {/* Search + Filter Controls */}
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                  <Input
+                    placeholder="Search products..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 w-[200px] lg:w-[260px] bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-cyan-500/50"
+                    data-testid="input-search"
+                  />
+                  {searchQuery && (
+                    <button 
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+
+                <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+                  <PopoverTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className={cn(
+                        "gap-2 bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white",
+                        selectedPriceTiers.length > 0 && "border-cyan-500/40 text-cyan-400"
+                      )}
+                      data-testid="button-filter"
+                    >
+                      <Filter className="h-4 w-4" />
+                      Filters
+                      {selectedPriceTiers.length > 0 && (
+                        <span className="px-1.5 py-0.5 rounded-md bg-cyan-500/30 text-xs">
+                          {selectedPriceTiers.length}
+                        </span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent 
+                    className="w-72 bg-background/95 backdrop-blur-xl border-white/10 p-4"
+                    align="end"
+                  >
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-semibold text-white flex items-center gap-2">
+                          <DollarSign className="h-4 w-4 text-cyan-400" />
+                          Price Range
+                        </h4>
+                        {hasActiveFilters && (
+                          <button 
+                            onClick={clearFilters}
+                            className="text-xs text-white/50 hover:text-white"
+                          >
+                            Clear all
+                          </button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        {priceTiers.map((tier) => {
+                          const isSelected = selectedPriceTiers.includes(tier.id);
+                          const count = products.filter((p: Product) => 
+                            p.price >= tier.min && p.price <= tier.max &&
+                            (activeTab === 'all' || p.category === activeTab)
+                          ).length;
+                          
+                          return (
+                            <button
+                              key={tier.id}
+                              onClick={() => togglePriceTier(tier.id)}
+                              className={cn(
+                                "px-3 py-2 rounded-lg text-sm transition-all duration-200 flex items-center justify-between",
+                                isSelected 
+                                  ? "bg-cyan-500/20 border border-cyan-500/40 text-cyan-400"
+                                  : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
+                              )}
+                              data-testid={`filter-${tier.id}`}
+                            >
+                              <span>{tier.label}</span>
+                              <span className="text-xs opacity-60">({count})</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
+            {/* Active Filters Display */}
+            <AnimatePresence>
+              {hasActiveFilters && (
+                <motion.div 
+                  className="flex flex-wrap items-center gap-2"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                >
+                  <span className="text-white/40 text-sm">Active filters:</span>
+                  {searchQuery && (
+                    <Badge 
+                      variant="secondary" 
+                      className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30 gap-1"
+                    >
+                      "{searchQuery}"
+                      <X className="h-3 w-3 cursor-pointer" onClick={() => setSearchQuery('')} />
+                    </Badge>
+                  )}
+                  {selectedPriceTiers.map(tierId => {
+                    const tier = priceTiers.find(t => t.id === tierId);
+                    return tier && (
+                      <Badge 
+                        key={tierId}
+                        variant="secondary" 
+                        className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30 gap-1"
+                      >
+                        {tier.label}
+                        <X className="h-3 w-3 cursor-pointer" onClick={() => togglePriceTier(tierId)} />
+                      </Badge>
+                    );
+                  })}
+                  <button 
+                    onClick={clearFilters}
+                    className="text-sm text-white/50 hover:text-white ml-2"
+                  >
+                    Clear all
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
+          {/* Products Grid */}
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
               <p className="text-muted-foreground">Loading products...</p>
             </div>
+          ) : filteredProducts.length === 0 ? (
+            <motion.div 
+              className="text-center py-20"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <div className="h-20 w-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6">
+                <Package className="h-10 w-10 text-white/30" />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">No products found</h3>
+              <p className="text-white/50 mb-6">Try adjusting your filters or search query</p>
+              <Button onClick={clearFilters} variant="outline" className="gap-2">
+                <X className="h-4 w-4" />
+                Clear Filters
+              </Button>
+            </motion.div>
           ) : (
-            <div className="space-y-24">
-              {/* Featured Products - Core Systems */}
-              {featuredProducts.length > 0 && (
+            <div className="space-y-16">
+              {/* Featured Products - Show only on "All" tab */}
+              {activeTab === 'all' && featuredProducts.length > 0 && !hasActiveFilters && (
                 <div>
-                  <div className="mb-10">
-                    <h3 className="text-xl font-semibold text-white/80 uppercase tracking-wider mb-2">
-                      Core Systems
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-white/80 uppercase tracking-wider mb-2">
+                      Featured
                     </h3>
-                    <p className="text-white/40 text-sm mb-3">Mission-critical systems for live servers</p>
-                    <div className="h-px w-full bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
+                    <p className="text-white/40 text-sm">Top-tier systems trusted by professionals</p>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {featuredProducts.map((product: Product, index: number) => (
@@ -205,89 +463,36 @@ export default function Home() {
                 </div>
               )}
 
-              {/* Utilities Section */}
-              {productsBySection.utilities.length > 0 && (
-                <div>
-                  <div className="mb-10">
-                    <h3 className="text-xl font-semibold text-white/80 uppercase tracking-wider mb-2">
-                      Utilities & Tools
+              {/* All Products Grid */}
+              <div>
+                {activeTab === 'all' && !hasActiveFilters && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-white/80 uppercase tracking-wider mb-2">
+                      All Products
                     </h3>
-                    <p className="text-white/40 text-sm mb-3">Lightweight tools that solve specific problems</p>
-                    <div className="h-px w-full bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
+                    <p className="text-white/40 text-sm">Browse our complete catalog</p>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {productsBySection.utilities
-                      .filter((p: Product) => !featuredProductNames.includes(p.name))
-                      .slice(0, 6)
+                )}
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  <AnimatePresence mode="popLayout">
+                    {filteredProducts
+                      .filter((p: Product) => activeTab !== 'all' || hasActiveFilters || !featuredProductNames.includes(p.name))
                       .map((product: Product, index: number) => (
                         <motion.div
                           key={product.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: index * 0.05 }}
+                          layout
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.9 }}
+                          transition={{ delay: index * 0.03, duration: 0.3 }}
                         >
                           <ProductCard product={product} />
                         </motion.div>
                       ))}
-                  </div>
+                  </AnimatePresence>
                 </div>
-              )}
-
-              {/* Assets Section */}
-              {productsBySection.assets.length > 0 && (
-                <div>
-                  <div className="mb-10">
-                    <h3 className="text-xl font-semibold text-white/80 uppercase tracking-wider mb-2">
-                      Templates & Assets
-                    </h3>
-                    <p className="text-white/40 text-sm mb-3">Ready-to-use designs and visual components</p>
-                    <div className="h-px w-full bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {productsBySection.assets.slice(0, 6).map((product: Product, index: number) => (
-                      <motion.div
-                        key={product.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: index * 0.05 }}
-                      >
-                        <ProductCard product={product} />
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Game Scripts Section */}
-              {productsBySection.core.length > 0 && (
-                <div>
-                  <div className="mb-10">
-                    <h3 className="text-xl font-semibold text-white/80 uppercase tracking-wider mb-2">
-                      Game Scripts
-                    </h3>
-                    <p className="text-white/40 text-sm mb-3">Optimized scripts for game servers</p>
-                    <div className="h-px w-full bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {productsBySection.core
-                      .filter((p: Product) => !featuredProductNames.includes(p.name))
-                      .slice(0, 6)
-                      .map((product: Product, index: number) => (
-                        <motion.div
-                          key={product.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: index * 0.05 }}
-                        >
-                          <ProductCard product={product} />
-                        </motion.div>
-                      ))}
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
           )}
         </div>
