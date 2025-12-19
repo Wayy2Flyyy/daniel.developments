@@ -1,0 +1,223 @@
+The Core Problem (Why This Feels Weak)
+
+Right now this modal:
+
+Repeats information already seen in the grid
+
+Talks about the product instead of showing its contents
+
+Feels like marketing, not tooling
+
+Does not justify the click
+
+For dev-focused products, users want to answer ONE question immediately:
+
+“What exactly do I get when I download this?”
+
+Not “features”.
+Not “status”.
+Files. Structure. Purpose. Guarantees.
+
+The Correct Mental Model
+
+This should feel like:
+
+A README.md
+
+A release package overview
+
+A technical product sheet
+
+Not a popup shop card.
+
+Exact New Structure (Follow This Order)
+1. Header: Identity + Context (Stronger Than Now)
+
+Replace the soft header with a technical header block.
+
+Left side
+
+Product name
+
+Category path
+Assets → Stream Deck → Icons
+
+Right side
+
+Version: v1.2.0
+
+Last updated: 12 Jan 2025
+
+Status badge: Production-Ready
+
+This immediately makes it feel maintained, not static.
+
+2. “What You Get” Section (This Is Critical)
+
+This should be the first real section, not description text.
+
+Use a monospace-style file tree
+
+Example (this is the level of detail you want):
+
+/stream-deck-icons-pack/
+├── README.md
+├── LICENSE.txt
+├── icons/
+│   ├── system/
+│   │   ├── start.png
+│   │   ├── stop.png
+│   │   └── restart.png
+│   ├── moderation/
+│   │   ├── ban.svg
+│   │   ├── mute.svg
+│   │   └── kick.svg
+│   ├── developer/
+│   │   ├── deploy.svg
+│   │   ├── logs.svg
+│   │   └── terminal.svg
+│   └── misc/
+├── psd/
+│   └── editable-icons.psd
+└── previews/
+    └── streamdeck-layout.png
+
+
+This single section alone will:
+
+Kill the “AI-made” feel
+
+Instantly justify the price
+
+Speak directly to developers
+
+3. File-Level Explanations (Rare, Powerful)
+
+Under the tree, add explanations, not fluff.
+
+Example:
+
+README.md
+Setup instructions, import steps, icon usage guidelines.
+
+LICENSE.txt
+Commercial + personal usage rights.
+
+PSD Source
+Fully layered, editable master icons for customization.
+
+This tells users you actually ship real packages, not assets slapped together.
+
+4. Use-Case Mapping (Very Important)
+
+Add a section called Designed For.
+
+Example:
+
+Server admins managing live environments
+
+Developers running Stream Deck workflows
+
+Moderation and deployment shortcuts
+
+Automated server control panels
+
+This ties files → real-world usage.
+
+5. Technical Specs (Dev-Friendly, Not Marketing)
+
+Create a compact grid:
+
+Total icons: 200+
+
+Formats: PNG, SVG
+
+Resolution: 72x72, 144x144
+
+Color modes: Dark / Light
+
+Editable source: Yes (PSD)
+
+Stream Deck ready: Yes
+
+This replaces vague “key features”.
+
+6. Preview With Purpose (Not Decoration)
+
+Instead of generic imagery, show:
+
+Actual Stream Deck layout
+
+Labeled icon groups
+
+Dark vs light comparison
+
+Add captions like:
+
+“Moderation icons mapped to Stream Deck XL”
+
+Captions = intent.
+
+7. Support & Updates Section (Trust Builder)
+
+This should exist in every product modal.
+
+Example:
+
+Documentation included
+
+Discord support access
+
+Free updates for this version
+
+Bug fixes & icon additions tracked
+
+Now it feels like software, not a download.
+
+8. Pricing & CTA — Move It Down
+
+Do NOT keep the price at the top.
+
+Move it to the bottom after all context.
+
+When users scroll down to price, they should already think:
+
+“Yeah, that’s fair.”
+
+Add microcopy under the button:
+
+Instant download • No DRM • Lifetime access
+
+9. Replace “Close” With Intentional Actions
+
+Buttons should be:
+
+Back to products
+
+Add to cart
+
+“Close” feels dismissive and generic.
+
+Visual Detail Changes (Small but Important)
+
+Use monospace font for file trees and specs
+
+Add subtle dividers between sections
+
+Slight accent glow on section headers
+
+Animate section reveal on scroll (very subtle)
+
+These details scream handcrafted.
+
+Brutal Truth
+
+Right now your modal says:
+
+“Here’s a product.”
+
+What you want it to say:
+
+“Here is the exact package you will download and use.”
+
+That shift alone removes the AI/template vibe.
