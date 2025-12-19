@@ -416,8 +416,17 @@ export default function Home() {
           {/* Products Grid */}
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
-              <p className="text-muted-foreground">Loading products...</p>
+              <div className="font-mono text-sm text-white/50 flex items-center gap-2">
+                <span className="text-cyan-400">&gt;</span>
+                <span>fetching products</span>
+                <motion.span
+                  animate={{ opacity: [1, 0.3, 1] }}
+                  transition={{ duration: 1.2, repeat: Infinity }}
+                >
+                  ...
+                </motion.span>
+              </div>
+              <div className="w-48 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
             </div>
           ) : filteredProducts.length === 0 ? (
             <motion.div 
@@ -425,14 +434,25 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
-              <div className="h-20 w-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6">
-                <Package className="h-10 w-10 text-white/30" />
+              <div className="inline-block p-6 rounded-2xl bg-white/[0.02] border border-white/10 mb-6">
+                <div className="font-mono text-sm text-white/40 space-y-2 text-left">
+                  <div className="flex items-center gap-2">
+                    <span className="text-amber-400">&gt;</span>
+                    <span>query: "{searchQuery || activeTab}"</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-red-400">!</span>
+                    <span>0 results found</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-white/30">
+                    <span>&nbsp;</span>
+                    <span>try adjusting filters</span>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">No products found</h3>
-              <p className="text-white/50 mb-6">Try adjusting your filters or search query</p>
-              <Button onClick={clearFilters} variant="outline" className="gap-2">
-                <X className="h-4 w-4" />
-                Clear Filters
+              <Button onClick={clearFilters} variant="outline" className="gap-2 font-mono text-xs">
+                <X className="h-3 w-3" />
+                reset --filters
               </Button>
             </motion.div>
           ) : (
@@ -440,11 +460,14 @@ export default function Home() {
               {/* Featured Products - Show only on "All" tab */}
               {activeTab === 'all' && featuredProducts.length > 0 && !hasActiveFilters && (
                 <div>
-                  <div className="mb-8">
-                    <h3 className="text-lg font-semibold text-white/80 uppercase tracking-wider mb-2">
-                      Featured
+                  <div className="mb-8 flex items-center gap-4">
+                    <h3 className="font-mono text-xs font-medium text-white/60 uppercase tracking-[0.2em]">
+                      // CORE_SYSTEMS
                     </h3>
-                    <p className="text-white/40 text-sm">Top-tier systems trusted by professionals</p>
+                    <div className="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent" />
+                    <span className="font-mono text-[10px] text-cyan-400/60 uppercase tracking-wider">
+                      mission-critical
+                    </span>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {featuredProducts.map((product: Product, index: number) => (
@@ -466,11 +489,14 @@ export default function Home() {
               {/* All Products Grid */}
               <div>
                 {activeTab === 'all' && !hasActiveFilters && (
-                  <div className="mb-8">
-                    <h3 className="text-lg font-semibold text-white/80 uppercase tracking-wider mb-2">
-                      All Products
+                  <div className="mb-8 flex items-center gap-4">
+                    <h3 className="font-mono text-xs font-medium text-white/60 uppercase tracking-[0.2em]">
+                      // ALL_PRODUCTS
                     </h3>
-                    <p className="text-white/40 text-sm">Browse our complete catalog</p>
+                    <div className="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent" />
+                    <span className="font-mono text-[10px] text-white/30 uppercase tracking-wider">
+                      {filteredProducts.length} items
+                    </span>
                   </div>
                 )}
                 
@@ -495,6 +521,97 @@ export default function Home() {
               </div>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Production-Ready Standard - Signature Section */}
+      <section className="py-20 relative overflow-hidden border-t border-white/5">
+        <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 via-background to-background" />
+        
+        <div className="container mx-auto px-6 lg:px-8 relative z-10 max-w-5xl">
+          <motion.div
+            className="relative p-8 md:p-12 rounded-2xl border border-emerald-500/20 backdrop-blur-sm"
+            style={{
+              background: 'linear-gradient(180deg, rgba(16,185,129,0.08) 0%, rgba(16,185,129,0.02) 100%)'
+            }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            {/* Terminal-style header */}
+            <div className="flex items-center gap-2 mb-8 pb-4 border-b border-white/10">
+              <div className="flex gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-red-500/60" />
+                <div className="w-3 h-3 rounded-full bg-amber-500/60" />
+                <div className="w-3 h-3 rounded-full bg-emerald-500/60" />
+              </div>
+              <span className="font-mono text-xs text-white/40 ml-2">production-ready.standard</span>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8 md:gap-12">
+              {/* What We Test */}
+              <div>
+                <h3 className="font-mono text-xs text-emerald-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                  <span className="text-emerald-400">✓</span> WHAT WE TEST
+                </h3>
+                <ul className="space-y-3 font-mono text-sm text-white/60">
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400/60 mt-0.5">→</span>
+                    <span>Stress-tested under real load conditions</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400/60 mt-0.5">→</span>
+                    <span>Security audit for common exploits</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400/60 mt-0.5">→</span>
+                    <span>Documentation completeness check</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400/60 mt-0.5">→</span>
+                    <span>Clean code review, no spaghetti</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* What We Reject */}
+              <div>
+                <h3 className="font-mono text-xs text-red-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                  <span className="text-red-400">✕</span> WHAT WE REJECT
+                </h3>
+                <ul className="space-y-3 font-mono text-sm text-white/40">
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-400/60 mt-0.5">→</span>
+                    <span>Copy-paste code with no understanding</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-400/60 mt-0.5">→</span>
+                    <span>Missing error handling</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-400/60 mt-0.5">→</span>
+                    <span>Hardcoded values without config</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-400/60 mt-0.5">→</span>
+                    <span>Undocumented dependencies</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Status bar */}
+            <div className="mt-8 pt-4 border-t border-white/10 flex flex-wrap items-center gap-4 font-mono text-[10px] text-white/30 uppercase tracking-wider">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                standard active
+              </span>
+              <span>|</span>
+              <span>last audit: dec 2024</span>
+              <span>|</span>
+              <span>support: discord</span>
+            </div>
+          </motion.div>
         </div>
       </section>
 
