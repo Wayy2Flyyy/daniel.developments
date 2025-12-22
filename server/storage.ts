@@ -1,4 +1,4 @@
-import { eq, and, isNull, lt } from "drizzle-orm";
+import { eq, and, isNull, lt, desc, count, sql } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { 
   type User, 
@@ -9,13 +9,15 @@ import {
   type InsertOrder,
   type Session,
   type WishlistItem,
+  type AdminSetup,
   users, 
   products,
   orders,
   sessions,
   emailVerificationTokens,
   passwordResetTokens,
-  wishlistItems
+  wishlistItems,
+  adminSetup
 } from "@shared/schema";
 
 export interface IStorage {
@@ -61,6 +63,23 @@ export interface IStorage {
   addToWishlist(userId: string, productId: number): Promise<WishlistItem>;
   removeFromWishlist(userId: string, productId: number): Promise<void>;
   isInWishlist(userId: string, productId: number): Promise<boolean>;
+
+  // Admin
+  isAdminSetupComplete(): Promise<boolean>;
+  completeAdminSetup(adminId: string): Promise<void>;
+  getAllUsers(): Promise<User[]>;
+  deleteUser(id: string): Promise<void>;
+  getAllOrders(): Promise<Order[]>;
+  getAllSessions(): Promise<(Session & { user: User })[]>;
+  updateProduct(id: number, data: Partial<Product>): Promise<Product | undefined>;
+  deleteProduct(id: number): Promise<void>;
+  getAnalytics(): Promise<{
+    totalUsers: number;
+    totalOrders: number;
+    totalProducts: number;
+    totalRevenue: number;
+    recentOrders: Order[];
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -259,6 +278,82 @@ export class DatabaseStorage implements IStorage {
       .where(and(eq(wishlistItems.userId, userId), eq(wishlistItems.productId, productId)))
       .limit(1);
     return !!item;
+  }
+
+  // Admin
+  async isAdminSetupComplete(): Promise<boolean> {
+    const [setup] = await db.select().from(adminSetup).limit(1);
+    return setup?.isComplete ?? false;
+  }
+
+  async completeAdminSetup(adminId: string): Promise<void> {
+    const [existing] = await db.select().from(adminSetup).limit(1);
+    if (existing) {
+      await db.update(adminSetup).set({ isComplete: true, completedAt: new Date(), completedBy: adminId }).where(eq(adminSetup.id, existing.id));
+    } else {
+      await db.insert(adminSetup).values({ isComplete: true, completedAt: new Date(), completedBy: adminId });
+    }
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    await db.delete(users).where(eq(users.id, id));
+  }
+
+  async getAllOrders(): Promise<Order[]> {
+    return await db.select().from(orders).orderBy(desc(orders.createdAt));
+  }
+
+  async getAllSessions(): Promise<(Session & { user: User })[]> {
+    const result = await db
+      .select()
+      .from(sessions)
+      .innerJoin(users, eq(sessions.userId, users.id))
+      .where(isNull(sessions.revokedAt))
+      .orderBy(desc(sessions.lastSeenAt));
+    
+    return result.map(row => ({
+      ...row.sessions,
+      user: row.users
+    }));
+  }
+
+  async updateProduct(id: number, data: Partial<Product>): Promise<Product | undefined> {
+    const [product] = await db.update(products).set(data).where(eq(products.id, id)).returning();
+    return product;
+  }
+
+  async deleteProduct(id: number): Promise<void> {
+    await db.delete(products).where(eq(products.id, id));
+  }
+
+  async getAnalytics(): Promise<{
+    totalUsers: number;
+    totalOrders: number;
+    totalProducts: number;
+    totalRevenue: number;
+    recentOrders: Order[];
+  }> {
+    const [userCount] = await db.select({ count: count() }).from(users);
+    const [orderCount] = await db.select({ count: count() }).from(orders);
+    const [productCount] = await db.select({ count: count() }).from(products);
+    
+    const [revenueResult] = await db.select({ 
+      total: sql<number>`COALESCE(SUM(${orders.total}), 0)` 
+    }).from(orders).where(eq(orders.status, "completed"));
+    
+    const recentOrders = await db.select().from(orders).orderBy(desc(orders.createdAt)).limit(10);
+    
+    return {
+      totalUsers: userCount?.count ?? 0,
+      totalOrders: orderCount?.count ?? 0,
+      totalProducts: productCount?.count ?? 0,
+      totalRevenue: Number(revenueResult?.total ?? 0),
+      recentOrders,
+    };
   }
 }
 

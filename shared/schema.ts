@@ -11,10 +11,19 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash"),
   displayName: text("display_name"),
   status: text("status").notNull().default("active"), // active, locked, deleted
+  role: text("role").notNull().default("user"), // user, admin
   mfaEnabled: boolean("mfa_enabled").notNull().default(false),
   mfaSecret: text("mfa_secret"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Admin setup tracking
+export const adminSetup = pgTable("admin_setup", {
+  id: serial("id").primaryKey(),
+  isComplete: boolean("is_complete").notNull().default(false),
+  completedAt: timestamp("completed_at"),
+  completedBy: varchar("completed_by"),
 });
 
 // Sessions - for session-based auth
@@ -100,6 +109,18 @@ export const loginSchema = z.object({
   rememberMe: z.boolean().optional(),
 });
 
+export const adminLoginSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
+});
+
+export const adminSetupSchema = z.object({
+  admins: z.array(z.object({
+    username: z.string().min(3, "Username must be at least 3 characters"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+  })).min(1).max(3),
+});
+
 export const insertProductSchema = createInsertSchema(products).omit({
   id: true,
   createdAt: true,
@@ -117,6 +138,7 @@ export type InsertUser = {
   email: string;
   passwordHash?: string;
   displayName?: string;
+  role?: string;
 };
 export type Session = typeof sessions.$inferSelect;
 export type Product = typeof products.$inferSelect;
@@ -124,3 +146,4 @@ export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type Order = typeof orders.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type WishlistItem = typeof wishlistItems.$inferSelect;
+export type AdminSetup = typeof adminSetup.$inferSelect;
