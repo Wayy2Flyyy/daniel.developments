@@ -1,8 +1,9 @@
 import { Link, useLocation } from "wouter";
-import { ShoppingBag, Menu, Terminal, User, LogIn } from "lucide-react";
+import { ShoppingBag, Menu, Terminal, User, LogIn, Heart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useCart } from "@/lib/cart-context";
 import { useAuth } from "@/lib/auth-context";
+import { useWishlist } from "@/lib/wishlist-context";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +13,7 @@ export function Navbar() {
   const [location] = useLocation();
   const { cartCount, setIsCartOpen } = useCart();
   const { user, isLoading, isAuthenticated } = useAuth();
+  const { items: wishlistItems } = useWishlist();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -101,6 +103,24 @@ export function Navbar() {
             )
           )}
 
+          {isAuthenticated && (
+            <Link href="/wishlist">
+              <Button 
+                data-testid="button-wishlist-nav"
+                variant="ghost" 
+                size="icon" 
+                className="relative text-white hover:bg-white/10 hidden sm:flex"
+              >
+                <Heart className="h-5 w-5" />
+                {wishlistItems.length > 0 && (
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px] rounded-full bg-rose-500 text-white border-none animate-in zoom-in">
+                    {wishlistItems.length}
+                  </Badge>
+                )}
+              </Button>
+            </Link>
+          )}
+
           <Button 
             data-testid="button-cart"
             variant="ghost" 
@@ -140,19 +160,34 @@ export function Navbar() {
                   ))}
                 </div>
                 
-                <div className="border-t border-white/10 pt-4">
+                <div className="border-t border-white/10 pt-4 space-y-2">
                   {!isLoading && (
                     isAuthenticated ? (
-                      <Link href="/account">
-                        <Button 
-                          variant="outline" 
-                          className="w-full justify-start gap-2 border-white/10 text-white"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                          <User className="w-4 h-4" />
-                          My Account
-                        </Button>
-                      </Link>
+                      <>
+                        <Link href="/wishlist">
+                          <Button 
+                            variant="outline" 
+                            className="w-full justify-start gap-2 border-white/10 text-white"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            <Heart className="w-4 h-4" />
+                            Wishlist
+                            {wishlistItems.length > 0 && (
+                              <Badge className="ml-auto bg-rose-500 text-white text-xs">{wishlistItems.length}</Badge>
+                            )}
+                          </Button>
+                        </Link>
+                        <Link href="/account">
+                          <Button 
+                            variant="outline" 
+                            className="w-full justify-start gap-2 border-white/10 text-white"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            <User className="w-4 h-4" />
+                            My Account
+                          </Button>
+                        </Link>
+                      </>
                     ) : (
                       <div className="flex flex-col gap-2">
                         <Link href="/login">

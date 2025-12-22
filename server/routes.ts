@@ -434,5 +434,76 @@ export async function registerRoutes(
     }
   });
 
+  // ============ WISHLIST ROUTES ============
+
+  // Get user's wishlist
+  app.get("/api/wishlist", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const items = await storage.getWishlistItems(req.user!.id);
+      res.json(items);
+    } catch (error) {
+      console.error("Error fetching wishlist:", error);
+      res.status(500).json({ error: "Failed to fetch wishlist" });
+    }
+  });
+
+  // Add to wishlist
+  app.post("/api/wishlist/:productId", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const productId = parseInt(req.params.productId);
+      if (isNaN(productId)) {
+        return res.status(400).json({ error: "Invalid product ID" });
+      }
+
+      const product = await storage.getProductById(productId);
+      if (!product) {
+        return res.status(404).json({ error: "Product not found" });
+      }
+
+      const exists = await storage.isInWishlist(req.user!.id, productId);
+      if (exists) {
+        return res.status(409).json({ error: "Product already in wishlist" });
+      }
+
+      const item = await storage.addToWishlist(req.user!.id, productId);
+      res.status(201).json(item);
+    } catch (error) {
+      console.error("Error adding to wishlist:", error);
+      res.status(500).json({ error: "Failed to add to wishlist" });
+    }
+  });
+
+  // Remove from wishlist
+  app.delete("/api/wishlist/:productId", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const productId = parseInt(req.params.productId);
+      if (isNaN(productId)) {
+        return res.status(400).json({ error: "Invalid product ID" });
+      }
+
+      await storage.removeFromWishlist(req.user!.id, productId);
+      res.json({ message: "Removed from wishlist" });
+    } catch (error) {
+      console.error("Error removing from wishlist:", error);
+      res.status(500).json({ error: "Failed to remove from wishlist" });
+    }
+  });
+
+  // Check if product is in wishlist
+  app.get("/api/wishlist/check/:productId", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const productId = parseInt(req.params.productId);
+      if (isNaN(productId)) {
+        return res.status(400).json({ error: "Invalid product ID" });
+      }
+
+      const inWishlist = await storage.isInWishlist(req.user!.id, productId);
+      res.json({ inWishlist });
+    } catch (error) {
+      console.error("Error checking wishlist:", error);
+      res.status(500).json({ error: "Failed to check wishlist" });
+    }
+  });
+
   return httpServer;
 }

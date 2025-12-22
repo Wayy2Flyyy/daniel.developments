@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/lib/cart-context";
 import { AuthProvider } from "@/lib/auth-context";
+import { WishlistProvider } from "@/lib/wishlist-context";
 import { CartDrawer } from "@/components/cart-drawer";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
@@ -13,6 +14,7 @@ import CheckoutPage from "@/pages/checkout";
 import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
 import AccountPage from "@/pages/account";
+import WishlistPage from "@/pages/wishlist";
 
 function Router() {
   return (
@@ -23,6 +25,7 @@ function Router() {
       <Route path="/login" component={LoginPage} />
       <Route path="/register" component={RegisterPage} />
       <Route path="/account" component={AccountPage} />
+      <Route path="/wishlist" component={WishlistPage} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -33,11 +36,13 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AuthProvider>
-          <CartProvider>
-            <CartDrawer />
-            <Toaster />
-            <Router />
-          </CartProvider>
+          <WishlistProvider>
+            <CartProvider>
+              <CartDrawer />
+              <Toaster />
+              <Router />
+            </CartProvider>
+          </WishlistProvider>
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>

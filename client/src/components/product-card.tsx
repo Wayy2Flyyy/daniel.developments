@@ -1,9 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, Package, FileText, Clock, Zap } from "lucide-react";
+import { ArrowRight, Package, FileText, Clock, Zap, Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { ProductDetailDialog } from "@/components/product-detail-dialog";
 import { cn } from "@/lib/utils";
+import { useWishlist } from "@/lib/wishlist-context";
+import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/hooks/use-toast";
 
 interface BaseProduct {
   id: number;
@@ -60,10 +63,33 @@ export function ProductCard({ product, featured = false }: ProductCardProps) {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
+  const { user } = useAuth();
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const { toast } = useToast();
   
   const signature = signatureLines[product.name] || { outcome: "Production-ready code", guardrail: "Tested & documented" };
   const proof = proofArtifacts[product.name];
   const isFeatured = featured || featuredProducts.includes(product.name);
+  const inWishlist = isInWishlist(product.id);
+
+  const handleWishlistClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user) {
+      toast({
+        title: "Login required",
+        description: "Please log in to save items to your wishlist.",
+        variant: "destructive",
+      });
+      return;
+    }
+    await toggleWishlist(product.id);
+    toast({
+      title: inWishlist ? "Removed from wishlist" : "Added to wishlist",
+      description: inWishlist 
+        ? `${product.name} has been removed.` 
+        : `${product.name} saved for later.`,
+    });
+  };
 
   if (product.type === 'project') {
     return (
@@ -164,18 +190,35 @@ export function ProductCard({ product, featured = false }: ProductCardProps) {
             >
               <Package className="h-4 w-4 text-white/50" />
             </div>
-            {isFeatured && (
-              <div className="ml-auto relative overflow-hidden">
-                <span className="inline-flex items-center px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 rounded">
-                  <span className="relative z-10">Verified</span>
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-400/20 to-transparent"
-                    animate={{ x: ['-100%', '200%'] }}
-                    transition={{ duration: 3, repeat: Infinity, repeatDelay: 5, ease: "easeInOut" }}
-                  />
-                </span>
-              </div>
-            )}
+            <div className="ml-auto flex items-center gap-2">
+              {/* Wishlist button */}
+              <motion.button
+                onClick={handleWishlistClick}
+                className={cn(
+                  "h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-200",
+                  "border",
+                  inWishlist 
+                    ? "bg-rose-500/20 border-rose-500/30 text-rose-400" 
+                    : "bg-white/5 border-white/10 text-white/40 hover:text-rose-400 hover:border-rose-500/30"
+                )}
+                whileTap={{ scale: 0.9 }}
+                data-testid={`button-wishlist-${product.id}`}
+              >
+                <Heart className={cn("h-4 w-4", inWishlist && "fill-current")} />
+              </motion.button>
+              {isFeatured && (
+                <div className="relative overflow-hidden">
+                  <span className="inline-flex items-center px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 rounded">
+                    <span className="relative z-10">Verified</span>
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-400/20 to-transparent"
+                      animate={{ x: ['-100%', '200%'] }}
+                      transition={{ duration: 3, repeat: Infinity, repeatDelay: 5, ease: "easeInOut" }}
+                    />
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
           
           {/* Title with hover shift */}

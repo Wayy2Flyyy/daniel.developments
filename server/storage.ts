@@ -8,12 +8,14 @@ import {
   type Order,
   type InsertOrder,
   type Session,
+  type WishlistItem,
   users, 
   products,
   orders,
   sessions,
   emailVerificationTokens,
-  passwordResetTokens
+  passwordResetTokens,
+  wishlistItems
 } from "@shared/schema";
 
 export interface IStorage {
@@ -53,6 +55,12 @@ export interface IStorage {
   getOrderById(id: number): Promise<Order | undefined>;
   getUserOrders(userId: string): Promise<Order[]>;
   updateOrderStatus(id: number, status: string, paymentIntentId?: string): Promise<Order | undefined>;
+  
+  // Wishlist
+  getWishlistItems(userId: string): Promise<(WishlistItem & { product: Product })[]>;
+  addToWishlist(userId: string, productId: number): Promise<WishlistItem>;
+  removeFromWishlist(userId: string, productId: number): Promise<void>;
+  isInWishlist(userId: string, productId: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -214,6 +222,43 @@ export class DatabaseStorage implements IStorage {
       .where(eq(orders.id, id))
       .returning();
     return order;
+  }
+
+  // Wishlist
+  async getWishlistItems(userId: string): Promise<(WishlistItem & { product: Product })[]> {
+    const items = await db
+      .select()
+      .from(wishlistItems)
+      .innerJoin(products, eq(wishlistItems.productId, products.id))
+      .where(eq(wishlistItems.userId, userId));
+    
+    return items.map(row => ({
+      ...row.wishlist_items,
+      product: row.products
+    }));
+  }
+
+  async addToWishlist(userId: string, productId: number): Promise<WishlistItem> {
+    const [item] = await db.insert(wishlistItems).values({
+      userId,
+      productId,
+    }).returning();
+    return item;
+  }
+
+  async removeFromWishlist(userId: string, productId: number): Promise<void> {
+    await db.delete(wishlistItems).where(
+      and(eq(wishlistItems.userId, userId), eq(wishlistItems.productId, productId))
+    );
+  }
+
+  async isInWishlist(userId: string, productId: number): Promise<boolean> {
+    const [item] = await db
+      .select()
+      .from(wishlistItems)
+      .where(and(eq(wishlistItems.userId, userId), eq(wishlistItems.productId, productId)))
+      .limit(1);
+    return !!item;
   }
 }
 
