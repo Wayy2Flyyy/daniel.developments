@@ -1,103 +1,139 @@
 import { Navbar } from "@/components/navbar";
 import { ProductCard } from "@/components/product-card";
-import { portfolioProjects } from "@/lib/products";
+import { portfolioProjects, products as storeProducts } from "@/lib/products";
+import { ProductFilters, applyFilters, buildInitialFilterState } from "@/components/product-filters";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Github, Twitter, Disc, Loader2, Shield, CheckCircle2, Zap, Users, Code2, Server, Sparkles, Layout, SlidersHorizontal, Package, Search, X, Filter, Grid3X3, DollarSign } from "lucide-react";
+import { ArrowRight, Github, Twitter, Disc, Loader2, Shield, CheckCircle2, Zap, Users, Code2, Server, SlidersHorizontal, Package, Layout, Sparkles, type LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
-import { fetchProducts } from "@/lib/api";
-import type { Product } from "@shared/schema";
 import { HeroSlideshow } from "@/components/hero-slideshow";
-import { motion, AnimatePresence } from "framer-motion";
-import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-
-const categoryTabs = [
-  { id: 'all', label: 'All', icon: Grid3X3 },
-  { id: 'Web Templates', label: 'Web Templates', icon: Layout },
-  { id: 'Developer Tools', label: 'Developer Tools', icon: Code2 },
-  { id: 'Game Scripts', label: 'Game Scripts', icon: Server },
-  { id: 'Applications', label: 'Applications', icon: Package },
-  { id: 'Misc', label: 'Misc', icon: Sparkles },
-];
-
-const priceTiers = [
-  { id: 'free', label: 'Free', min: 0, max: 0 },
-  { id: 'budget', label: 'Under $25', min: 1, max: 24 },
-  { id: 'mid', label: '$25 - $50', min: 25, max: 50 },
-  { id: 'premium', label: '$50+', min: 51, max: Infinity },
-];
-
-const featuredProductNames = [
-  "Anti-Cheat Core (Lua)",
-  "Mortal Economy Core",
-  "Mortal Admin Panel"
-];
+import { motion } from "framer-motion";
 
 export default function Home() {
-  const { data: products = [], isLoading } = useQuery({
-    queryKey: ['products'],
-    queryFn: fetchProducts,
-  });
-
-  const [activeTab, setActiveTab] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPriceTiers, setSelectedPriceTiers] = useState<string[]>([]);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-
-  const featuredProducts = useMemo(() => {
-    return products.filter((p: Product) => featuredProductNames.includes(p.name));
-  }, [products]);
-
-  const filteredProducts = useMemo(() => {
-    let filtered = products;
-    
-    if (activeTab !== 'all') {
-      filtered = filtered.filter((p: Product) => p.category === activeTab);
-    }
-    
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter((p: Product) => 
-        p.name.toLowerCase().includes(query) || 
-        p.description.toLowerCase().includes(query)
-      );
-    }
-    
-    if (selectedPriceTiers.length > 0) {
-      filtered = filtered.filter((p: Product) => {
-        return selectedPriceTiers.some(tierId => {
-          const tier = priceTiers.find(t => t.id === tierId);
-          if (!tier) return false;
-          return p.price >= tier.min && p.price <= tier.max;
-        });
-      });
-    }
-    
-    return filtered;
-  }, [products, activeTab, searchQuery, selectedPriceTiers]);
-
-  const togglePriceTier = (tierId: string) => {
-    setSelectedPriceTiers(prev => 
-      prev.includes(tierId) 
-        ? prev.filter(id => id !== tierId)
-        : [...prev, tierId]
-    );
+  type CoreProductCategory = {
+    title: string;
+    icon: LucideIcon;
+    who: string;
+    problem?: string;
+    deliver: string[];
+    built?: string[];
+    timeline?: string;
+    pricing: string[];
+    upgrades?: string[];
+    note?: string;
   };
 
-  const clearFilters = () => {
-    setSearchQuery('');
-    setSelectedPriceTiers([]);
-  };
+  // Advanced product filters state
+  const [filters, setFilters] = useState(() => buildInitialFilterState(storeProducts));
+  const filteredProducts = useMemo(() => applyFilters(storeProducts, filters), [filters]);
 
-  const hasActiveFilters = searchQuery.trim() || selectedPriceTiers.length > 0;
+  // Browse vs Filter view
+  const [viewMode, setViewMode] = useState<"browse" | "filter">("browse");
 
-  const getCategoryCount = (categoryId: string) => {
-    if (categoryId === 'all') return products.length;
-    return products.filter((p: Product) => p.category === categoryId).length;
-  };
+  // Auto-categorised groups for Browse mode
+  const autoGroups = useMemo(() => {
+    const isFeature = (p: any, f: string) => p.features?.includes(f);
+    const featured = storeProducts.filter((p) => p.name.toLowerCase() === "secure vault");
+    const rest = storeProducts.filter((p) => p.name.toLowerCase() !== "secure vault");
+    const csharp = rest.filter((p) => isFeature(p, "C#"));
+    const python = rest.filter((p) => isFeature(p, "Python"));
+
+    return [
+      { key: "featured", title: "Secure Vault (Main Project)", items: featured },
+      { key: "csharp", title: "C# Applications", items: csharp },
+      { key: "python", title: "Python Tools (Budget)", items: python },
+    ].filter((g) => g.items.length > 0);
+  }, []);
+
+  const coreProductCategories = useMemo(() => {
+    return [
+      {
+        title: "Custom Software Systems",
+        icon: SlidersHorizontal,
+        who: "Businesses that need internal tools, dashboards, admin systems, or automation.",
+        problem: "Manual work, slow operations, messy data, poor internal UX.",
+        deliver: [
+          "Custom dashboards",
+          "Admin panels",
+          "Internal tools",
+          "Automation systems",
+          "Secure data handling",
+          "Scalable architecture",
+        ],
+        built: [
+          "TypeScript / C# / Go / Python (project-dependent)",
+          "Clean architecture",
+          "Modular systems",
+          "Long-term maintainability",
+        ],
+        timeline: "2–6 weeks depending on scope",
+        pricing: ["From £1,200", "Typical projects: £2,500–£6,000"],
+        upgrades: ["Ongoing support", "Feature expansions", "Hosting & monitoring"],
+      },
+      {
+        title: "UI/UX Engineering",
+        icon: Layout,
+        who: "Teams with ugly, clunky, or inefficient interfaces.",
+        problem: "Bad usability, poor flow, low trust, unfinished feel.",
+        deliver: [
+          "Interface redesigns",
+          "Interaction systems",
+          "Component libraries",
+          "Layout restructuring",
+          "Animation logic",
+          "UX logic tied to real usage",
+        ],
+        note: "Practical UI changes that improve clarity and trust.",
+        timeline: "1–3 weeks",
+        pricing: ["From £600", "Full systems: £1,500–£3,500"],
+      },
+      {
+        title: "Websites",
+        icon: Package,
+        who: "Businesses that need credibility, conversion, and speed.",
+        problem: "Outdated sites, poor structure, low trust.",
+        deliver: [
+          "Custom front-end builds",
+          "SEO-ready structure",
+          "Performance-focused layout",
+          "Mobile-first systems",
+          "CMS or static builds depending on needs",
+        ],
+        timeline: "1–4 weeks",
+        pricing: ["From £500", "Advanced builds: £1,500+"],
+      },
+      {
+        title: "Automation & Tooling",
+        icon: Zap,
+        who: "Businesses wasting time on repetitive tasks.",
+        problem: "Manual work, errors, inefficiency.",
+        deliver: [
+          "Workflow automation",
+          "Custom scripts",
+          "API integrations",
+          "Data syncing",
+          "Monitoring tools",
+        ],
+        timeline: "3 days – 2 weeks",
+        pricing: ["From £350", "Retainers available"],
+      },
+      {
+        title: "Ongoing Engineering Support (Retainers)",
+        icon: Users,
+        who: "Clients who already have systems and need a reliable engineer.",
+        deliver: [
+          "Feature updates",
+          "Fixes",
+          "Optimisation",
+          "Advice",
+          "Priority access",
+        ],
+        pricing: ["£400 / month (light)", "£800+ / month (core support)"],
+        note: "Reliable support for ongoing updates and fixes.",
+      },
+    ] satisfies CoreProductCategory[];
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -202,8 +238,8 @@ export default function Home() {
                   <Package className="h-8 w-8 text-cyan-400" />
                 </div>
                 <div>
-                  <h2 className="font-display text-3xl md:text-4xl font-bold text-white">Product Catalog</h2>
-                  <p className="text-muted-foreground">Production-ready code, tested in live environments</p>
+                  <h2 className="font-display text-3xl md:text-4xl font-bold text-white">Core Product Categories</h2>
+                  <p className="text-muted-foreground">High-value engineering services — scoped, shipped, maintained</p>
                 </div>
               </div>
               
@@ -216,8 +252,8 @@ export default function Home() {
                   viewport={{ once: true }}
                   transition={{ delay: 0.1 }}
                 >
-                  <span className="text-cyan-400 font-bold">{products.length}</span>
-                  <span className="text-white/60 ml-2 text-sm">Products</span>
+                  <span className="text-cyan-400 font-bold">{coreProductCategories.length}</span>
+                  <span className="text-white/60 ml-2 text-sm">Categories</span>
                 </motion.div>
                 <motion.div 
                   className="px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm"
@@ -226,301 +262,242 @@ export default function Home() {
                   viewport={{ once: true }}
                   transition={{ delay: 0.2 }}
                 >
-                  <span className="text-emerald-400 font-bold">{categoryTabs.length - 1}</span>
-                  <span className="text-white/60 ml-2 text-sm">Categories</span>
+                  <span className="text-emerald-400 font-bold">UK</span>
+                  <span className="text-white/60 ml-2 text-sm">Pricing</span>
                 </motion.div>
               </div>
             </div>
           </motion.div>
 
-          {/* Category Tabs + Smart Filter */}
-          <div className="mb-10">
-            {/* Tabs Row */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-6">
-              <div className="flex flex-wrap gap-2">
-                {categoryTabs.map((tab, index) => {
-                  const IconComponent = tab.icon;
-                  const isActive = activeTab === tab.id;
-                  const count = getCategoryCount(tab.id);
-                  
-                  return (
-                    <motion.button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={cn(
-                        "relative px-4 py-2.5 rounded-xl flex items-center gap-2 text-sm font-medium transition-all duration-300",
-                        isActive 
-                          ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40" 
-                          : "bg-white/5 text-white/60 border border-white/10 hover:bg-white/10 hover:text-white"
-                      )}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      data-testid={`tab-${tab.id}`}
-                    >
-                      <IconComponent className="h-4 w-4" />
-                      <span className="hidden sm:inline">{tab.label}</span>
-                      <span className={cn(
-                        "ml-1 px-1.5 py-0.5 rounded-md text-xs",
-                        isActive ? "bg-cyan-500/30 text-cyan-300" : "bg-white/10 text-white/40"
-                      )}>
-                        {count}
-                      </span>
-                      {isActive && (
-                        <motion.div
-                          className="absolute inset-0 rounded-xl border-2 border-cyan-500/50"
-                          layoutId="activeTab"
-                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                        />
-                      )}
-                    </motion.button>
-                  );
-                })}
-              </div>
-
-              {/* Search + Filter Controls */}
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
-                  <Input
-                    placeholder="Search products..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 w-[200px] lg:w-[260px] bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-cyan-500/50"
-                    data-testid="input-search"
-                  />
-                  {searchQuery && (
-                    <button 
-                      onClick={() => setSearchQuery('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
-
-                <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-                  <PopoverTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className={cn(
-                        "gap-2 bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white",
-                        selectedPriceTiers.length > 0 && "border-cyan-500/40 text-cyan-400"
-                      )}
-                      data-testid="button-filter"
-                    >
-                      <Filter className="h-4 w-4" />
-                      Filters
-                      {selectedPriceTiers.length > 0 && (
-                        <span className="px-1.5 py-0.5 rounded-md bg-cyan-500/30 text-xs">
-                          {selectedPriceTiers.length}
-                        </span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent 
-                    className="w-72 bg-background/95 backdrop-blur-xl border-white/10 p-4"
-                    align="end"
-                  >
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-semibold text-white flex items-center gap-2">
-                          <DollarSign className="h-4 w-4 text-cyan-400" />
-                          Price Range
-                        </h4>
-                        {hasActiveFilters && (
-                          <button 
-                            onClick={clearFilters}
-                            className="text-xs text-white/50 hover:text-white"
-                          >
-                            Clear all
-                          </button>
-                        )}
+          {/* Core Categories Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {coreProductCategories.map((category, index) => {
+              const Icon = category.icon;
+              return (
+                <motion.div
+                  key={category.title}
+                  initial={{ opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.06 }}
+                  className={index === 0 ? "lg:col-span-2" : ""}
+                >
+                  <div className="group h-full p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl transition-colors duration-300 hover:bg-white/[0.06] hover:border-white/20">
+                    <div className="flex items-start gap-4 mb-6">
+                      <div className="h-12 w-12 rounded-2xl bg-cyan-500/15 border border-cyan-500/25 flex items-center justify-center flex-shrink-0">
+                        <Icon className="h-6 w-6 text-cyan-400" />
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        {priceTiers.map((tier) => {
-                          const isSelected = selectedPriceTiers.includes(tier.id);
-                          const count = products.filter((p: Product) => 
-                            p.price >= tier.min && p.price <= tier.max &&
-                            (activeTab === 'all' || p.category === activeTab)
-                          ).length;
-                          
-                          return (
-                            <button
-                              key={tier.id}
-                              onClick={() => togglePriceTier(tier.id)}
-                              className={cn(
-                                "px-3 py-2 rounded-lg text-sm transition-all duration-200 flex items-center justify-between",
-                                isSelected 
-                                  ? "bg-cyan-500/20 border border-cyan-500/40 text-cyan-400"
-                                  : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
-                              )}
-                              data-testid={`filter-${tier.id}`}
-                            >
-                              <span>{tier.label}</span>
-                              <span className="text-xs opacity-60">({count})</span>
-                            </button>
-                          );
-                        })}
+                      <div className="min-w-0">
+                        <h3 className="font-display text-2xl font-bold text-white leading-tight">
+                          {category.title}
+                        </h3>
                       </div>
                     </div>
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
 
-            {/* Active Filters Display */}
-            <AnimatePresence>
-              {hasActiveFilters && (
-                <motion.div 
-                  className="flex flex-wrap items-center gap-2"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                >
-                  <span className="text-white/40 text-sm">Active filters:</span>
-                  {searchQuery && (
-                    <Badge 
-                      variant="secondary" 
-                      className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30 gap-1"
-                    >
-                      "{searchQuery}"
-                      <X className="h-3 w-3 cursor-pointer" onClick={() => setSearchQuery('')} />
-                    </Badge>
-                  )}
-                  {selectedPriceTiers.map(tierId => {
-                    const tier = priceTiers.find(t => t.id === tierId);
-                    return tier && (
-                      <Badge 
-                        key={tierId}
-                        variant="secondary" 
-                        className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30 gap-1"
-                      >
-                        {tier.label}
-                        <X className="h-3 w-3 cursor-pointer" onClick={() => togglePriceTier(tierId)} />
-                      </Badge>
-                    );
-                  })}
-                  <button 
-                    onClick={clearFilters}
-                    className="text-sm text-white/50 hover:text-white ml-2"
-                  >
-                    Clear all
-                  </button>
+                    <div className="grid md:grid-cols-2 gap-8">
+                      <div className="space-y-6">
+                        <div>
+                          <p className="font-mono text-[11px] text-white/50 uppercase tracking-[0.2em] mb-2">WHO IT’S FOR</p>
+                          <p className="text-muted-foreground leading-relaxed">{category.who}</p>
+                        </div>
+
+                        {category.problem && (
+                          <div>
+                            <p className="font-mono text-[11px] text-white/50 uppercase tracking-[0.2em] mb-2">WHAT PROBLEM IT SOLVES</p>
+                            <p className="text-muted-foreground leading-relaxed">{category.problem}</p>
+                          </div>
+                        )}
+
+                        {category.note && (
+                          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
+                            <p className="text-sm text-white/70 leading-relaxed">{category.note}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="space-y-6">
+                        <div>
+                          <p className="font-mono text-[11px] text-white/50 uppercase tracking-[0.2em] mb-3">WHAT YOU DELIVER</p>
+                          <ul className="space-y-2 text-sm text-muted-foreground">
+                            {category.deliver.map((item) => (
+                              <li key={item} className="flex items-start gap-2">
+                                <span className="text-cyan-400/70 mt-1">→</span>
+                                <span>{item}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        {category.built && (
+                          <div>
+                            <p className="font-mono text-[11px] text-white/50 uppercase tracking-[0.2em] mb-3">HOW IT’S BUILT</p>
+                            <ul className="space-y-2 text-sm text-muted-foreground">
+                              {category.built.map((item) => (
+                                <li key={item} className="flex items-start gap-2">
+                                  <span className="text-emerald-400/70 mt-1">✓</span>
+                                  <span>{item}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {(category.timeline || category.pricing || category.upgrades) && (
+                          <div className="grid gap-4">
+                            {category.timeline && (
+                              <div className="p-4 rounded-2xl bg-black/20 border border-white/10">
+                                <p className="font-mono text-[10px] text-white/40 uppercase tracking-wider mb-1">TIMELINE</p>
+                                <p className="text-sm text-white/70 leading-snug">{category.timeline}</p>
+                              </div>
+                            )}
+                            {category.pricing && (
+                              <div className="p-4 rounded-2xl bg-black/20 border border-white/10">
+                                <p className="font-mono text-[10px] text-white/40 uppercase tracking-wider mb-1">PRICING</p>
+                                <div className="text-sm text-white/70 space-y-1 leading-snug">
+                                  {category.pricing.map((line) => {
+                                    const trimmed = line.trim();
+
+                                    if (trimmed.toLowerCase().startsWith("from ")) {
+                                      const value = trimmed.slice(5).trim();
+                                      return (
+                                        <div
+                                          key={line}
+                                          className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5"
+                                        >
+                                          <span className="text-white/60 whitespace-nowrap">From</span>
+                                          <span className="ml-auto text-white font-semibold tabular-nums whitespace-nowrap">{value}</span>
+                                        </div>
+                                      );
+                                    }
+
+                                    const colonIndex = trimmed.indexOf(":");
+                                    if (colonIndex > -1 && colonIndex < trimmed.length - 1) {
+                                      const label = trimmed.slice(0, colonIndex + 1);
+                                      const value = trimmed.slice(colonIndex + 1).trim();
+                                      return (
+                                        <div
+                                          key={line}
+                                          className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5"
+                                        >
+                                          <span className="text-white/60 whitespace-nowrap">{label}</span>
+                                          <span className="ml-auto text-white/70 tabular-nums whitespace-nowrap">{value}</span>
+                                        </div>
+                                      );
+                                    }
+
+                                    return (
+                                      <p key={line} className="text-white/70">
+                                        {trimmed}
+                                      </p>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {category.upgrades && (
+                          <div>
+                            <p className="font-mono text-[11px] text-white/50 uppercase tracking-[0.2em] mb-3">UPGRADES</p>
+                            <ul className="space-y-2 text-sm text-muted-foreground">
+                              {category.upgrades.map((item) => (
+                                <li key={item} className="flex items-start gap-2">
+                                  <span className="text-violet-400/70 mt-1">+</span>
+                                  <span>{item}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </motion.div>
-              )}
-            </AnimatePresence>
+              );
+            })}
           </div>
 
-          {/* Products Grid */}
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <div className="font-mono text-sm text-white/50 flex items-center gap-2">
-                <span className="text-cyan-400">&gt;</span>
-                <span>fetching products</span>
-                <motion.span
-                  animate={{ opacity: [1, 0.3, 1] }}
-                  transition={{ duration: 1.2, repeat: Infinity }}
-                >
-                  ...
-                </motion.span>
-              </div>
-              <div className="w-48 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+          {/* Store Products (Purchasable) */}
+          <div className="mt-16">
+            <div className="mb-8 flex items-center gap-4">
+              <h3 className="font-mono text-xs font-medium text-white/60 uppercase tracking-[0.2em]">
+                // STORE_PRODUCTS
+              </h3>
+              <div className="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent" />
+              <span className="font-mono text-[10px] text-white/30 uppercase tracking-wider">
+                click a product for details
+              </span>
             </div>
-          ) : filteredProducts.length === 0 ? (
-            <motion.div 
-              className="text-center py-20"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              <div className="inline-block p-6 rounded-2xl bg-white/[0.02] border border-white/10 mb-6">
-                <div className="font-mono text-sm text-white/40 space-y-2 text-left">
-                  <div className="flex items-center gap-2">
-                    <span className="text-amber-400">&gt;</span>
-                    <span>query: "{searchQuery || activeTab}"</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-red-400">!</span>
-                    <span>0 results found</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-white/30">
-                    <span>&nbsp;</span>
-                    <span>try adjusting filters</span>
-                  </div>
-                </div>
-              </div>
-              <Button onClick={clearFilters} variant="outline" className="gap-2 font-mono text-xs">
-                <X className="h-3 w-3" />
-                reset --filters
-              </Button>
-            </motion.div>
-          ) : (
-            <div className="space-y-16">
-              {/* Featured Products - Show only on "All" tab */}
-              {activeTab === 'all' && featuredProducts.length > 0 && !hasActiveFilters && (
-                <div>
-                  <div className="mb-8 flex items-center gap-4">
-                    <h3 className="font-mono text-xs font-medium text-white/60 uppercase tracking-[0.2em]">
-                      // CORE_SYSTEMS
-                    </h3>
-                    <div className="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent" />
-                    <span className="font-mono text-[10px] text-cyan-400/60 uppercase tracking-wider">
-                      mission-critical
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {featuredProducts.map((product: Product, index: number) => (
-                      <motion.div
-                        key={product.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: index * 0.1 }}
-                        className={index === 0 ? "lg:col-span-2" : ""}
-                      >
-                        <ProductCard product={product} featured />
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
-              {/* All Products Grid */}
-              <div>
-                {activeTab === 'all' && !hasActiveFilters && (
-                  <div className="mb-8 flex items-center gap-4">
-                    <h3 className="font-mono text-xs font-medium text-white/60 uppercase tracking-[0.2em]">
-                      // ALL_PRODUCTS
-                    </h3>
-                    <div className="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent" />
-                    <span className="font-mono text-[10px] text-white/30 uppercase tracking-wider">
-                      {filteredProducts.length} items
-                    </span>
-                  </div>
+            {/* View mode toggle */}
+            <div className="mb-4 flex items-center gap-2">
+              <button
+                className={cn(
+                  "px-3 py-1.5 rounded-md text-xs border",
+                  viewMode === "browse" ? "bg-white/10 border-white/20" : "bg-transparent border-white/10"
                 )}
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  <AnimatePresence mode="popLayout">
-                    {filteredProducts
-                      .filter((p: Product) => activeTab !== 'all' || hasActiveFilters || !featuredProductNames.includes(p.name))
-                      .map((product: Product, index: number) => (
+                onClick={() => setViewMode("browse")}
+              >
+                Browse
+              </button>
+              <button
+                className={cn(
+                  "px-3 py-1.5 rounded-md text-xs border",
+                  viewMode === "filter" ? "bg-white/10 border-white/20" : "bg-transparent border-white/10"
+                )}
+                onClick={() => setViewMode("filter")}
+              >
+                Filter
+              </button>
+            </div>
+
+            {viewMode === "browse" ? (
+              <div className="space-y-12">
+                {autoGroups.map((group, gi) => (
+                  <div key={group.key}>
+                    <div className="flex items-center gap-3 mb-4">
+                      <h4 className="font-mono text-xs text-white/60 uppercase tracking-[0.2em]">{group.title}</h4>
+                      <div className="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent" />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {group.items.map((product, index) => (
                         <motion.div
                           key={product.id}
-                          layout
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.9 }}
-                          transition={{ delay: index * 0.03, duration: 0.3 }}
+                          initial={{ opacity: 0, y: 18 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: index * 0.03 }}
                         >
                           <ProductCard product={product} />
                         </motion.div>
                       ))}
-                  </AnimatePresence>
-                </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-          )}
+            ) : (
+              <>
+                <ProductFilters products={storeProducts} state={filters} onChange={setFilters} variant="minimal" className="mb-8" />
+                <div className="mb-4 text-sm text-white/60 font-mono">
+                  Showing {filteredProducts.length} of {storeProducts.length}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {filteredProducts.map((product, index) => (
+                    <motion.div
+                      key={product.id}
+                      initial={{ opacity: 0, y: 18 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: index * 0.03 }}
+                    >
+                      <ProductCard product={product} />
+                    </motion.div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </section>
 
@@ -732,7 +709,7 @@ export default function Home() {
           <div className="flex flex-col md:flex-row justify-between gap-12">
             <div className="space-y-6 max-w-sm">
               <h3 className="font-display text-2xl font-bold bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
-                Daniel.Domain
+                Daniel Developments
               </h3>
               <p className="text-muted-foreground leading-relaxed">
                 Quality code, templates, and tools. Built by a professional developer who ships.
@@ -785,7 +762,7 @@ export default function Home() {
           </div>
           
           <div className="mt-16 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-            <p>© 2024 Daniel Domain. All rights reserved.</p>
+            <p>© 2024 Daniel Developments. All rights reserved.</p>
             <div className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
               <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-emerald-400 font-medium">All Systems Operational</span>

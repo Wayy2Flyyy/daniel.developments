@@ -99,6 +99,7 @@ export class DatabaseStorage implements IStorage {
       email: insertUser.email.toLowerCase(),
       passwordHash: insertUser.passwordHash,
       displayName: insertUser.displayName,
+      role: insertUser.role,
     }).returning();
     return user;
   }

@@ -40,7 +40,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 backdrop-blur-3xl" />
         <div className="relative z-10 flex flex-col justify-center p-12 text-white">
           <h1 className="text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-violet-400">
-            Danielillis Domain
+            Daniel Developments
           </h1>
           <p className="text-xl text-slate-300 mb-8">
             Premium FiveM scripts, web templates, and developer tools built for production.

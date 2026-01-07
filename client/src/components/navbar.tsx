@@ -51,7 +51,7 @@ export function Navbar() {
               <Terminal className="h-4 w-4 text-primary" />
             </div>
             <span className="font-display text-xl font-bold tracking-tight text-white">
-              Daniel<span className="text-primary">.Domain</span>
+              Daniel<span className="text-primary"> Developments</span>
             </span>
           </div>
         </Link>

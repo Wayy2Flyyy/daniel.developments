@@ -7,6 +7,7 @@ interface User {
   displayName: string | null;
   emailVerifiedAt: string | null;
   status: string;
+  role: string;
   mfaEnabled: boolean;
   createdAt: string;
 }
@@ -20,6 +21,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   logoutAll: () => Promise<void>;
   refresh: () => Promise<void>;
+  refetch: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -124,6 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout,
         logoutAll,
         refresh,
+        refetch: refresh,
       }}
     >
       {children}

@@ -5,162 +5,79 @@ const seedProducts = async () => {
   console.log("🌱 Seeding products...");
 
   const productsData = [
-    // FiveM Scripts
+    // C# Applications
     {
-      name: "Mortal Admin Panel",
-      price: 49,
-      description: "The ultimate controller-first admin menu for FiveM. Features sleek F4 trigger, player management, and live server metrics.",
-      image: "/generated_images/mortal_plugins_product_box.png",
-      category: "FiveM Resources",
-      features: ["Controller Support", "Live Metrics", "Ban/Kick System", "Permissions Integration"],
-      type: "product"
-    },
-    {
-      name: "Mortal HUD System",
-      price: 29,
-      description: "A standalone, highly optimized HUD overlay. Fully customizable, minimal impact on performance, and beautiful animations.",
-      image: "/generated_images/fivem_server_hud_interface.png",
-      category: "FiveM Resources",
-      features: ["0.01ms CPU Usage", "Fully Customizable", "Status Indicators", "Vehicle HUD"],
-      type: "product"
-    },
-    {
-      name: "Mortal Chat iOS",
-      price: 19,
-      description: "Replace the default chat with a modern, iOS-inspired communication interface. Supports emojis, image embedding, and distinct channels.",
-      image: "/generated_images/discord_bot_avatar.png",
-      category: "FiveM Resources",
-      features: ["iOS Aesthetic", "Image Embeds", "Channel Support", "Spam Protection"],
-      type: "product"
-    },
-    {
-      name: "Mortal Economy Core",
-      price: 89,
-      description: "The backbone of your server's economy. Secure, exploit-proof money handling with banking, cash, and robbery integration.",
-      image: "/generated_images/mortal_plugins_product_box.png",
-      category: "FiveM Resources",
-      features: ["Exploit Proof", "Banking UI", "Robbery API", "Transaction Logs"],
-      type: "product"
-    },
-    {
-      name: "Advanced Robbery System",
-      price: 35,
-      description: "Complex heist mechanics with minigames, silent alarms, and police dispatch integration.",
-      image: "/generated_images/fivem_server_hud_interface.png",
-      category: "FiveM Resources",
-      features: ["Minigames", "Police Dispatch", "Cooldowns", "Loot Tables"],
-      type: "product"
-    },
-    // Applications
-    {
-      name: "Server Launcher Pro",
-      price: 25,
-      description: "White-label desktop launcher for your game server. Auto-updates, cache clearing, and news feed.",
-      image: "/generated_images/desktop_application_icon.png",
-      category: "Applications",
-      features: ["Auto-Updater", "Cache Clear", "News Feed", "White Label"],
-      type: "product"
-    },
-    {
-      name: "Log Viewer Desktop",
+      name: "NetworkMonitor",
       price: 15,
-      description: "A dedicated desktop app for parsing and viewing server logs in real-time with regex search and highlighting.",
+      description: "Monitor network traffic and connections in real-time. Built with C# for Windows desktop environments. Note: Application ships without bundled content; you receive a ready-to-customize application.",
       image: "/generated_images/desktop_application_icon.png",
       category: "Applications",
-      features: ["Real-time Stream", "Regex Search", "Syntax Highlighting", "Export to CSV"],
+      features: ["Real-time Monitoring", "Connection Tracking", "Traffic Analysis", "Windows Native"],
       type: "product"
     },
     {
-      name: "Texture Compressor Tool",
+      name: "Mixer",
       price: 12,
-      description: "Drag-and-drop utility to optimize game textures without losing visible quality. Essential for server performance.",
+      description: "Audio mixing and control application with modern UI. Built with C# for professional audio management. Note: Application ships without bundled content; you receive a ready-to-customize application.",
       image: "/generated_images/desktop_application_icon.png",
       category: "Applications",
-      features: ["Batch Processing", "Lossless Mode", "DDS Support", "Drag & Drop"],
-      type: "product"
-    },
-    // Web Templates
-    {
-      name: "Nexus Community Portal",
-      price: 59,
-      description: "Full-stack React template for gaming communities. Includes forums, store, and stats integration pages.",
-      image: "/generated_images/web_template_thumbnail.png",
-      category: "Web Templates",
-      features: ["React & Tailwind", "Forum Layout", "Store Integration", "Mobile Responsive"],
+      features: ["Audio Control", "Multi-Channel Support", "Modern UI", "Low Latency"],
       type: "product"
     },
     {
-      name: "Status Page Modern",
-      price: 15,
-      description: "Clean, auto-updating status page template to show your services uptime. Connects easily to UptimeRobot API.",
-      image: "/generated_images/web_template_thumbnail.png",
-      category: "Web Templates",
-      features: ["API Integration", "Dark Mode", "Incident History", "Fast Loading"],
+      name: "Devtool",
+      price: 18,
+      description: "Essential developer utilities and tools in one application. Built with C# for streamlined development workflow. Note: Application ships without bundled content; you receive a ready-to-customize application.",
+      image: "/generated_images/desktop_application_icon.png",
+      category: "Applications",
+      features: ["Developer Utils", "Code Tools", "Productivity Suite", "Windows Native"],
       type: "product"
     },
+    // Python Applications (£2 each)
     {
-      name: "Loading Screen V4",
-      price: 10,
-      description: "Cinematic loading screen for FiveM servers with background video, music player, and staff roster.",
-      image: "/generated_images/web_template_thumbnail.png",
-      category: "Web Templates",
-      features: ["Video Background", "Music Player", "Staff List", "Configurable"],
-      type: "product"
-    },
-    // Developer Tools
-    {
-      name: "Discord Bot Boilerplate (Python)",
-      price: 19,
-      description: "Production-ready Python bot structure with Cog loading, database connection, and error handling pre-configured.",
+      name: "Login/Register System",
+      price: 2,
+      description: "Complete authentication system with login and registration functionality. Built with Python. Note: Application ships without bundled content; you receive a ready-to-customize application.",
       image: "/generated_images/python_script_icon.png",
-      category: "Developer Tools",
-      features: ["Cog Loader", "PostgreSQL Ready", "Error Handling", "Slash Commands"],
+      category: "Applications",
+      features: ["User Authentication", "Registration Flow", "Password Security", "Python Based"],
       type: "product"
     },
     {
-      name: "Anti-Cheat Core (Lua)",
-      price: 99,
-      description: "Raw Lua source code for a robust anti-cheat system. Detects injections, triggers, and abnormal player values.",
-      image: "/generated_images/raw_code_snippet.png",
-      category: "Developer Tools",
-      features: ["Source Code", "Injection Detect", "Godmode Check", "Trigger Protection"],
-      type: "product"
-    },
-    {
-      name: "Data Scraper Script",
-      price: 9,
-      description: "Python script for scraping public game server data for analytics. Includes proxy rotation support.",
+      name: "Image Convertor",
+      price: 2,
+      description: "Convert images between multiple formats with ease. Built with Python for batch processing. Note: Application ships without bundled content; you receive a ready-to-customize application.",
       image: "/generated_images/python_script_icon.png",
-      category: "Developer Tools",
-      features: ["Proxy Support", "Fast Async", "JSON Export", "Scheduler"],
-      type: "product"
-    },
-    // Misc
-    {
-      name: "Ultimate VSCode Theme",
-      price: 5,
-      description: "My personal VSCode theme configuration. Optimized for long coding sessions with high contrast and eye-care colors.",
-      image: "/generated_images/config_file_icon.png",
-      category: "Misc",
-      features: ["High Contrast", "Eye Care", "Custom Icons", "Semantic Highlighting"],
+      category: "Applications",
+      features: ["Multiple Formats", "Batch Processing", "Quality Control", "Python Based"],
       type: "product"
     },
     {
-      name: "Server Config Generator",
-      price: 0,
-      description: "Simple web tool to generate complex server.cfg files with best practices applied automatically.",
-      image: "/generated_images/config_file_icon.png",
-      category: "Misc",
-      features: ["Best Practices", "One-Click Gen", "Validation", "Free Tool"],
+      name: "Application Use & Gaming Stopwatch",
+      price: 2,
+      description: "Track time spent on applications and games. Built with Python for detailed usage analytics. Note: Application ships without bundled content; you receive a ready-to-customize application.",
+      image: "/generated_images/python_script_icon.png",
+      category: "Applications",
+      features: ["Time Tracking", "Usage Analytics", "Gaming Stats", "Python Based"],
       type: "product"
     },
     {
-      name: "Stream Deck Icons Pack",
-      price: 8,
-      description: "Pack of 200+ icons specifically designed for developers and server admins using Stream Decks.",
-      image: "/generated_images/config_file_icon.png",
-      category: "Misc",
-      features: ["200+ Icons", "PSD Included", "Vector SVG", "Dark/Light Variants"],
+      name: "Calculator Template",
+      price: 2,
+      description: "Customizable calculator template for various calculation needs. Built with Python. Note: Application ships without bundled content; you receive a ready-to-customize application.",
+      image: "/generated_images/python_script_icon.png",
+      category: "Applications",
+      features: ["Customizable", "Multiple Operations", "Clean UI", "Python Based"],
+      type: "product"
+    },
+    // Main Project
+    {
+      name: "Secure Vault",
+      price: 49,
+      description: "Secure Vault represents a new approach to personal data security — one that prioritizes your privacy, gives you complete control, and doesn't compromise on usability or design. Whether you're a security-conscious individual, a professional handling sensitive data, or just someone who wants better password management, Secure Vault provides a trustworthy, transparent solution. Built with C#, TypeScript, HTML, CSS, and JavaScript. Note: Application ships without bundled content; you receive a ready-to-customize application.",
+      image: "/generated_images/desktop_application_icon.png",
+      category: "Applications",
+      features: ["End-to-End Encryption", "Web Interface", "Secure Storage", "Multi-Platform"],
       type: "product"
     }
   ];

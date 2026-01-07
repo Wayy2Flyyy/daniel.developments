@@ -121,12 +121,21 @@ export const adminSetupSchema = z.object({
   })).min(1).max(3),
 });
 
-export const insertProductSchema = createInsertSchema(products).omit({
+export const insertProductSchema = createInsertSchema(products, {
+  features: z.array(z.string()),
+}).omit({
   id: true,
   createdAt: true,
 });
 
-export const insertOrderSchema = createInsertSchema(orders).omit({
+export const insertOrderSchema = createInsertSchema(orders, {
+  items: z.array(z.object({
+    id: z.number(),
+    name: z.string(),
+    price: z.number(),
+    quantity: z.number(),
+  })),
+}).omit({
   id: true,
   createdAt: true,
   status: true,

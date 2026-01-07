@@ -266,7 +266,7 @@ export function HeroSlideshow() {
                       <div className="w-3 h-3 rounded-full bg-red-500/80" />
                       <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
                       <div className="w-3 h-3 rounded-full bg-green-500/80" />
-                      <span className="ml-4 text-xs text-muted-foreground font-mono">daniel.domain</span>
+                      <span className="ml-4 text-xs text-muted-foreground font-mono">daniel.developments</span>
                     </div>
 
                     <div className="font-mono text-sm space-y-2 text-white/70">

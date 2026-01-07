@@ -28,6 +28,52 @@ export async function registerRoutes(
   app.use(cookieParser());
   app.use(authMiddleware);
 
+  // If configured, ensure an initial admin account exists.
+  // Uses env vars so secrets are not hard-coded in source.
+  const ensureAdminFromEnv = async () => {
+    const adminEmailRaw = process.env.ADMIN_EMAIL?.trim();
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    if (!adminEmailRaw || !adminPassword) return;
+
+    const adminEmail = adminEmailRaw.toLowerCase();
+    if (!adminEmail.includes("@")) {
+      console.warn("ADMIN_EMAIL must be a valid email address; skipping admin auto-seed");
+      return;
+    }
+
+    const existing = await storage.getUserByEmail(adminEmail);
+    const displayName = adminEmail.split("@")[0];
+
+    if (!existing) {
+      const passwordHash = await hashPassword(adminPassword);
+      const user = await storage.createUser({
+        email: adminEmail,
+        passwordHash,
+        displayName,
+        role: "admin",
+      });
+
+      const isComplete = await storage.isAdminSetupComplete();
+      if (!isComplete) {
+        await storage.completeAdminSetup(user.id);
+      }
+      return;
+    }
+
+    // Ensure the existing account is admin.
+    if (existing.role !== "admin") {
+      await storage.updateUser(existing.id, { role: "admin" });
+    }
+
+    const isComplete = await storage.isAdminSetupComplete();
+    if (!isComplete) {
+      await storage.completeAdminSetup(existing.id);
+    }
+  };
+
+  await ensureAdminFromEnv();
+
   // ============ AUTH ROUTES ============
 
   // Register
@@ -543,7 +589,9 @@ export async function registerRoutes(
       const createdAdmins = [];
 
       for (const admin of admins) {
-        const email = `${admin.username}@admin.local`;
+        const identity = admin.username.trim().toLowerCase();
+        const email = identity.includes("@") ? identity : `${identity}@admin.local`;
+        const displayName = identity.includes("@") ? identity.split("@")[0] : admin.username;
         
         // Check if user already exists
         const existing = await storage.getUserByEmail(email);
@@ -555,7 +603,7 @@ export async function registerRoutes(
         const user = await storage.createUser({
           email,
           passwordHash,
-          displayName: admin.username,
+          displayName,
           role: "admin",
         });
         createdAdmins.push(user);
@@ -584,7 +632,8 @@ export async function registerRoutes(
       }
 
       const { username, password } = result.data;
-      const email = `${username}@admin.local`;
+      const identity = username.trim().toLowerCase();
+      const email = identity.includes("@") ? identity : `${identity}@admin.local`;
 
       const user = await storage.getUserByEmail(email);
       

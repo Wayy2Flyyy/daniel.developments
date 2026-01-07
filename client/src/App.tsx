@@ -15,6 +15,9 @@ import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
 import AccountPage from "@/pages/account";
 import WishlistPage from "@/pages/wishlist";
+import AdminLogin from "@/pages/admin/login";
+import AdminSetup from "@/pages/admin/setup";
+import AdminDashboard from "@/pages/admin/dashboard";
 
 function Router() {
   return (
@@ -26,6 +29,9 @@ function Router() {
       <Route path="/register" component={RegisterPage} />
       <Route path="/account" component={AccountPage} />
       <Route path="/wishlist" component={WishlistPage} />
+      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/login" component={AdminLogin} />
+      <Route path="/admin/setup" component={AdminSetup} />
       <Route component={NotFound} />
     </Switch>
   );
