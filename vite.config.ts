@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, splitVendorChunkPlugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
@@ -10,6 +10,7 @@ export default defineConfig({
     react(),
     runtimeErrorOverlay(),
     tailwindcss(),
+    splitVendorChunkPlugin(),
     metaImagesPlugin(),
     ...(process.env.NODE_ENV !== "production" &&
     process.env.REPL_ID !== undefined
@@ -39,6 +40,18 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    chunkSizeWarningLimit: 1500,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("react")) return "react";
+            if (id.includes("@radix-ui")) return "radix";
+            return "vendor";
+          }
+        },
+      },
+    },
   },
   server: {
     host: "0.0.0.0",

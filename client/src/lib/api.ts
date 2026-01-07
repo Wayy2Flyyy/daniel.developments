@@ -1,6 +1,7 @@
 import { Product, Order } from "@shared/schema";
 
-const API_BASE = "/api";
+// Allow configuring API base for deployments (e.g., Vercel static front-end)
+const API_BASE = import.meta.env.VITE_API_BASE || "/api";
 
 export async function fetchProducts(): Promise<Product[]> {
   const response = await fetch(`${API_BASE}/products`);
